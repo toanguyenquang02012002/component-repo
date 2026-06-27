@@ -27,12 +27,16 @@ const VELOCITY_THRESHOLD = 800;
 
 interface BottomSheetContextValue {
   notifyAtTop: (isAtTop: boolean) => void;
+  // notifyDraggingSheet: (isDragging: boolean) => void;
   dragHandlerRef: React.RefObject<PanGestureHandler | null>;
+  // isDraggingSheet: boolean;
 }
 
 export const BottomSheetContext = createContext<BottomSheetContextValue>({
   notifyAtTop: () => {},
+  // notifyDraggingSheet: () => {},
   dragHandlerRef: { current: null },
+  // isDraggingSheet: false,
 });
 
 export interface BottomSheetRef {
@@ -241,16 +245,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
                 <View style={styles.handle} />
               </Animated.View>
             </PanGestureHandler>
-
-            {/* <PanGestureHandler
-              ref={dragHandlerRef}
-              onGestureEvent={onGestureEvent}
-              onHandlerStateChange={onHandlerStateChange}
-              // enabled={false}
-              enabled={atTop}
-              activeOffsetY={8}
-              failOffsetY={-8}
-            > */}
             <PanGestureHandler
               ref={dragHandlerRef}
               onGestureEvent={onGestureEvent}

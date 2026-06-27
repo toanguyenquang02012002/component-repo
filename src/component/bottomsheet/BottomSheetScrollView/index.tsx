@@ -27,18 +27,6 @@ export function BottomSheetScrollView({
 
         notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
       }}
-      // onScrollBeginDrag={event => {
-      //   notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
-      // }}
-      // onScrollEndDrag={event => {
-      //   notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
-      // }}
-      // onMomentumScrollBegin={event => {
-      //   notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
-      // }}
-      // onMomentumScrollEnd={event => {
-      //   notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
-      // }}
       showsVerticalScrollIndicator={false}
     >
       {children}
