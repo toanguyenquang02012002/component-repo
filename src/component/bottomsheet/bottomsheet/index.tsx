@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -17,7 +18,11 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import {
+  Gesture,
+  GestureDetector,
+  GestureType,
+} from 'react-native-gesture-handler';
 import { Portal } from 'react-native-paper';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -28,14 +33,14 @@ const VELOCITY_THRESHOLD = 800;
 interface BottomSheetContextValue {
   notifyAtTop: (isAtTop: boolean) => void;
   // notifyDraggingSheet: (isDragging: boolean) => void;
-  dragHandlerRef: React.RefObject<PanGestureHandler | null>;
+  contentPanGesture: GestureType | null;
   // isDraggingSheet: boolean;
 }
 
 export const BottomSheetContext = createContext<BottomSheetContextValue>({
   notifyAtTop: () => {},
   // notifyDraggingSheet: () => {},
-  dragHandlerRef: { current: null },
+  contentPanGesture: null,
   // isDraggingSheet: false,
 });
 
@@ -60,7 +65,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     const [visible, setVisible] = useState(false);
     const atTopRef = useRef(true);
     const [atTop, setAtTop] = useState(true);
-    const dragHandlerRef = useRef<PanGestureHandler>(null);
 
     const notifyAtTop = useCallback((isAtTop: boolean) => {
       atTopRef.current = isAtTop;
@@ -117,86 +121,85 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     useImperativeHandle(ref, () => ({ open, close }), [open, close]);
 
-    const onGestureEvent = useCallback(
-      (event: {
-        nativeEvent: {
-          translationY: number;
-        };
-      }) => {
-        const { translationY: dragY } = event.nativeEvent;
-
-        // Content không ở top thì không cho bottom sheet di chuyển
-        if (!atTopRef.current) {
-          translateY.setValue(0);
-          return;
-        }
-
-        // Chỉ cho kéo xuống, không cho kéo lên
-        translateY.setValue(Math.max(0, dragY));
-      },
-      [translateY],
-    );
-    // const onHandlerStateChange = useCallback(
-    //   (event: {
-    //     nativeEvent: {
-    //       oldState: number;
-    //       translationY: number;
-    //       velocityY: number;
-    //     };
-    //   }) => {
-    //     if (event.nativeEvent.oldState === State.ACTIVE) {
-    //       const { translationY, velocityY } = event.nativeEvent;
-
-    //       if (
-    //         translationY > CLOSE_THRESHOLD ||
-    //         velocityY > VELOCITY_THRESHOLD
-    //       ) {
-    //         close();
-    //       } else {
-    //         Animated.spring(translateY, {
-    //           toValue: 0,
-    //           useNativeDriver: true,
-    //           damping: 20,
-    //           stiffness: 300,
-    //         }).start();
-    //       }
-    //     }
-    //   },
-    //   [close, translateY],
-    // );
-    const onHandlerStateChange = useCallback(
-      (event: {
-        nativeEvent: {
-          oldState: number;
-          translationY: number;
-          velocityY: number;
-        };
-      }) => {
-        if (event.nativeEvent.oldState !== State.ACTIVE) {
-          return;
-        }
-
-        if (!atTopRef.current) {
-          translateY.setValue(0);
-          return;
-        }
-
-        const { translationY, velocityY } = event.nativeEvent;
-        const dragY = Math.max(0, translationY);
-
-        if (dragY > CLOSE_THRESHOLD || velocityY > VELOCITY_THRESHOLD) {
-          close();
-          return;
-        }
-
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 20,
-          stiffness: 300,
-        }).start();
-      },
+    // Gesture for the handle area (always active, drag down only)
+    const handlePanGesture = useMemo(
+      () =>
+        Gesture.Pan()
+          .runOnJS(true)
+          .activeOffsetY([-5, 5])
+          .onUpdate(event => {
+            const { translationY: dragY } = event;
+            if (!atTopRef.current) {
+              translateY.setValue(0);
+              return;
+            }
+            translateY.setValue(Math.max(0, dragY));
+          })
+          .onEnd(event => {
+            if (!atTopRef.current) {
+              translateY.setValue(0);
+              return;
+            }
+            const dragY = Math.max(0, event.translationY);
+            if (
+              dragY > CLOSE_THRESHOLD ||
+              event.velocityY > VELOCITY_THRESHOLD
+            ) {
+              close();
+              return;
+            }
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              damping: 20,
+              stiffness: 300,
+            }).start();
+          }),
       [close, translateY],
+    );
+    const contentPanGesture = useMemo(
+      () =>
+        Gesture.Pan()
+          .runOnJS(true)
+          .enabled(atTop)
+          .activeOffsetY(8)
+          .failOffsetY(-8)
+          .onUpdate(event => {
+            const { translationY: dragY } = event;
+
+            // Content không ở top thì không cho bottom sheet di chuyển
+            if (!atTopRef.current) {
+              translateY.setValue(0);
+              return;
+            }
+
+            // Chỉ cho kéo xuống, không cho kéo lên
+            translateY.setValue(Math.max(0, dragY));
+          })
+          .onEnd(event => {
+            if (!atTopRef.current) {
+              translateY.setValue(0);
+              return;
+            }
+
+            const dragY = Math.max(0, event.translationY);
+
+            if (
+              dragY > CLOSE_THRESHOLD ||
+              event.velocityY > VELOCITY_THRESHOLD
+            ) {
+              close();
+              return;
+            }
+
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              damping: 20,
+              stiffness: 300,
+            }).start();
+          }),
+      [atTop, close, translateY],
     );
     if (!visible) {
       return null;
@@ -236,31 +239,20 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
               style,
             ]}
           >
-            <PanGestureHandler
-              onGestureEvent={onGestureEvent}
-              onHandlerStateChange={onHandlerStateChange}
-              activeOffsetY={[-5, 5]}
-            >
+            <GestureDetector gesture={handlePanGesture}>
               <Animated.View style={styles.handleArea}>
                 <View style={styles.handle} />
               </Animated.View>
-            </PanGestureHandler>
-            <PanGestureHandler
-              ref={dragHandlerRef}
-              onGestureEvent={onGestureEvent}
-              onHandlerStateChange={onHandlerStateChange}
-              enabled={atTop}
-              activeOffsetY={8}
-              failOffsetY={-8}
-            >
+            </GestureDetector>
+            <GestureDetector gesture={contentPanGesture}>
               <Animated.View style={styles.content}>
                 <BottomSheetContext.Provider
-                  value={{ notifyAtTop, dragHandlerRef }}
+                  value={{ notifyAtTop, contentPanGesture }}
                 >
                   {children}
                 </BottomSheetContext.Provider>
               </Animated.View>
-            </PanGestureHandler>
+            </GestureDetector>
           </Animated.View>
         </View>
       </Portal>

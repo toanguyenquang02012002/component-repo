@@ -1,13 +1,9 @@
-import React, { useCallback, useContext, useRef, useState } from 'react';
 import {
   ScrollView,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
   type ScrollViewProps,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { BottomSheetContext } from '../bottomsheet';
 
 export interface BottomSheetContentProps
   extends Omit<

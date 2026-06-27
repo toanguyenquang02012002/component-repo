@@ -1,19 +1,13 @@
-import React, { useRef } from 'react';
-import {
-  Pressable,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import {
   BottomSheet,
+  BottomSheetFlatList,
   BottomSheetRef,
-  BottomSheetScrollView,
 } from '../../../component';
 
 const TEST_ITEMS = Array.from({ length: 24 }, (_, index) => ({
-  id: index + 1,
+  id: String(index + 1),
   title: `Bottom sheet item ${index + 1}`,
 }));
 
@@ -23,6 +17,16 @@ export function HomeScreen(): React.ReactElement {
   const openBottomSheet = () => {
     bottomSheetRef.current?.open();
   };
+
+  const renderItem = useCallback(
+    ({ item }: { item: (typeof TEST_ITEMS)[number] }) => (
+      <View style={styles.listItem}>
+        <Text style={styles.listItemTitle}>{item.title}</Text>
+        <Text style={styles.listItemSubtitle}>Gesture and scroll test row</Text>
+      </View>
+    ),
+    [],
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -45,22 +49,19 @@ export function HomeScreen(): React.ReactElement {
       </View>
 
       <BottomSheet ref={bottomSheetRef} snapHeight={520}>
-        <BottomSheetScrollView contentContainerStyle={styles.sheetContent}>
+        <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>Bottom Sheet</Text>
           <Text style={styles.sheetDescription}>
             Scroll this list, then pull down from the top or drag the handle to
-            close.
+            close.1
           </Text>
-
-          {TEST_ITEMS.map(item => (
-            <View key={item.id} style={styles.listItem}>
-              <Text style={styles.listItemTitle}>{item.title}</Text>
-              <Text style={styles.listItemSubtitle}>
-                Gesture and scroll test row
-              </Text>
-            </View>
-          ))}
-        </BottomSheetScrollView>
+        </View>
+        <BottomSheetFlatList
+          data={TEST_ITEMS}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.sheetContent}
+        />
       </BottomSheet>
     </SafeAreaView>
   );
@@ -107,6 +108,10 @@ const styles = StyleSheet.create({
   sheetContent: {
     paddingBottom: 32,
     paddingHorizontal: 20,
+  },
+  sheetHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 8,
   },
   sheetTitle: {
     color: '#FFFFFF',

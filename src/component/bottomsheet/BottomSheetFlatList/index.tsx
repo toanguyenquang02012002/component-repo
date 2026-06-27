@@ -1,19 +1,17 @@
 import React, { useContext, useMemo } from 'react';
-import { ScrollView, StyleProp, ViewStyle } from 'react-native';
+import { FlatList, FlatListProps, StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { BottomSheetContext } from '../bottomsheet';
 
-export interface BottomSheetScrollViewProps {
-  children: React.ReactNode;
+export interface BottomSheetFlatListProps<T>
+  extends Omit<FlatListProps<T>, 'style'> {
   style?: StyleProp<ViewStyle>;
-  contentContainerStyle?: StyleProp<ViewStyle>;
 }
 
-export function BottomSheetScrollView({
-  children,
+export function BottomSheetFlatList<T>({
   style,
-  contentContainerStyle,
-}: BottomSheetScrollViewProps): React.ReactElement {
+  ...rest
+}: BottomSheetFlatListProps<T>): React.ReactElement {
   const { notifyAtTop, contentPanGesture } = useContext(BottomSheetContext);
 
   const nativeScrollGesture = useMemo(() => {
@@ -26,17 +24,15 @@ export function BottomSheetScrollView({
 
   return (
     <GestureDetector gesture={nativeScrollGesture}>
-      <ScrollView
+      <FlatList
         style={style}
-        contentContainerStyle={contentContainerStyle}
         scrollEventThrottle={16}
         onScroll={event => {
           notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
         }}
         showsVerticalScrollIndicator={false}
-      >
-        {children}
-      </ScrollView>
+        {...rest}
+      />
     </GestureDetector>
   );
 }
