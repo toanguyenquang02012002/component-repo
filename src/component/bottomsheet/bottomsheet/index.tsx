@@ -12,6 +12,9 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Keyboard,
+  KeyboardEvent,
+  Platform,
   StyleProp,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -55,26 +58,61 @@ export interface BottomSheetProps {
   snapHeight?: number;
   backdropOpacity?: number;
   style?: StyleProp<ViewStyle>;
+  avoidKeyboard?: boolean;
+  keyboardVerticalOffset?: number;
 }
 
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
-  ({ children, onClose, snapHeight, backdropOpacity = 0.5, style }, ref) => {
+  (
+    {
+      children,
+      onClose,
+      snapHeight,
+      backdropOpacity = 0.5,
+      style,
+      avoidKeyboard = true,
+      keyboardVerticalOffset = 0,
+    },
+    ref,
+  ) => {
     const sheetHeight = snapHeight ?? SCREEN_HEIGHT * 0.6;
     const translateY = useRef(new Animated.Value(sheetHeight)).current;
     const backdropAnim = useRef(new Animated.Value(0)).current;
+    const keyboardOffset = useRef(new Animated.Value(0)).current;
     const [visible, setVisible] = useState(false);
+    const animationIdRef = useRef(0);
     const atTopRef = useRef(true);
     const [atTop, setAtTop] = useState(true);
+    const visibleRef = useRef(false);
 
     const notifyAtTop = useCallback((isAtTop: boolean) => {
       atTopRef.current = isAtTop;
       setAtTop(isAtTop);
     }, []);
 
+    const stopRunningAnimations = useCallback(() => {
+      translateY.stopAnimation();
+      backdropAnim.stopAnimation();
+      keyboardOffset.stopAnimation();
+    }, [backdropAnim, keyboardOffset, translateY]);
+
     const close = useCallback(() => {
+      if (!visibleRef.current) {
+        return;
+      }
+
+      const animationId = animationIdRef.current + 1;
+      animationIdRef.current = animationId;
+      stopRunningAnimations();
+
       Animated.parallel([
         Animated.timing(translateY, {
           toValue: sheetHeight,
+          duration: 260,
+          useNativeDriver: true,
+        }),
+        Animated.timing(keyboardOffset, {
+          toValue: 0,
           duration: 260,
           useNativeDriver: true,
         }),
@@ -84,44 +122,105 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           useNativeDriver: true,
         }),
       ]).start(({ finished }) => {
-        if (finished) {
+        if (finished && animationIdRef.current === animationId) {
+          visibleRef.current = false;
           setVisible(false);
           onClose?.();
         }
       });
-    }, [backdropAnim, onClose, sheetHeight, translateY]);
+    }, [
+      backdropAnim,
+      keyboardOffset,
+      onClose,
+      sheetHeight,
+      stopRunningAnimations,
+      translateY,
+    ]);
 
     const open = useCallback(() => {
+      const animationId = animationIdRef.current + 1;
+      animationIdRef.current = animationId;
+      stopRunningAnimations();
       atTopRef.current = true;
       setAtTop(true);
-      translateY.setValue(sheetHeight);
-      backdropAnim.setValue(0);
-      setVisible(true);
-    }, [backdropAnim, sheetHeight, translateY]);
+
+      if (!visibleRef.current) {
+        translateY.setValue(sheetHeight);
+        backdropAnim.setValue(0);
+        visibleRef.current = true;
+        setVisible(true);
+      }
+
+      keyboardOffset.setValue(0);
+
+      requestAnimationFrame(() => {
+        if (animationIdRef.current !== animationId) {
+          return;
+        }
+
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: 420,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(backdropAnim, {
+            toValue: 1,
+            duration: 420,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+    }, [
+      backdropAnim,
+      keyboardOffset,
+      sheetHeight,
+      stopRunningAnimations,
+      translateY,
+    ]);
 
     useEffect(() => {
-      if (!visible) {
+      if (!visible || !avoidKeyboard) {
         return;
       }
 
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 700,
+      const showEvent =
+        Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+      const hideEvent =
+        Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+      const animateKeyboardOffset = (
+        toValue: number,
+        event?: KeyboardEvent,
+      ) => {
+        Animated.timing(keyboardOffset, {
+          toValue,
+          duration: event?.duration ?? 250,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
-        }),
-        Animated.timing(backdropAnim, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, [backdropAnim, translateY, visible]);
+        }).start();
+      };
+
+      const showSubscription = Keyboard.addListener(showEvent, event => {
+        const nextOffset = Math.max(
+          0,
+          event.endCoordinates.height - keyboardVerticalOffset,
+        );
+        animateKeyboardOffset(nextOffset, event);
+      });
+      const hideSubscription = Keyboard.addListener(hideEvent, event => {
+        animateKeyboardOffset(0, event);
+      });
+
+      return () => {
+        showSubscription.remove();
+        hideSubscription.remove();
+      };
+    }, [avoidKeyboard, keyboardOffset, keyboardVerticalOffset, visible]);
 
     useImperativeHandle(ref, () => ({ open, close }), [open, close]);
 
-    // Gesture for the handle area (always active, drag down only)
     const handlePanGesture = useMemo(
       () =>
         Gesture.Pan()
@@ -129,17 +228,17 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           .activeOffsetY([-5, 5])
           .onUpdate(event => {
             const { translationY: dragY } = event;
-            if (!atTopRef.current) {
-              translateY.setValue(0);
-              return;
-            }
+            // if (!atTopRef.current) {
+            //   translateY.setValue(0);
+            //   return;
+            // }
             translateY.setValue(Math.max(0, dragY));
           })
           .onEnd(event => {
-            if (!atTopRef.current) {
-              translateY.setValue(0);
-              return;
-            }
+            // if (!atTopRef.current) {
+            //   translateY.setValue(0);
+            //   return;
+            // }
             const dragY = Math.max(0, event.translationY);
             if (
               dragY > CLOSE_THRESHOLD ||
@@ -228,11 +327,14 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
                 height: sheetHeight,
                 transform: [
                   {
-                    translateY: translateY.interpolate({
-                      inputRange: [0, 10000],
-                      outputRange: [0, 10000],
-                      extrapolateLeft: 'clamp',
-                    }),
+                    translateY: Animated.add(
+                      translateY.interpolate({
+                        inputRange: [0, 10000],
+                        outputRange: [0, 10000],
+                        extrapolateLeft: 'clamp',
+                      }),
+                      Animated.multiply(keyboardOffset, -1),
+                    ),
                   },
                 ],
               },

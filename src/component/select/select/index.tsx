@@ -1,0 +1,410 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { ItemSelectProduct, SelectProps } from './entity';
+import {
+  BottomSheet,
+  BottomSheetFlatList,
+  BottomSheetRef,
+} from '../../bottomsheet';
+
+const DEFAULT_SHEET_HEIGHT = 520;
+
+export const Select = ({
+  label,
+  itemSelected,
+  onSelected,
+  containerStyle,
+  data = [],
+  error,
+  disabled,
+  isPaging,
+  onPaging,
+  isLoadmore,
+  selectStyle,
+  searchBox,
+  onChangeTextSearch,
+  textSearch,
+  unit,
+  filterOption,
+  loading,
+  isHighlightCopy,
+  textStyle,
+  searchInputStyle,
+  snapHeight = DEFAULT_SHEET_HEIGHT,
+  keyboardVerticalOffset = 96,
+}: SelectProps) => {
+  const refbottomSheet = useRef<BottomSheetRef>(null);
+  const [searchValue, setSearchValue] = useState(textSearch ?? '');
+  const [valueSelected, setValueSelected] = useState<ItemSelectProduct>();
+
+  useEffect(() => {
+    setSearchValue(textSearch ?? '');
+  }, [textSearch]);
+
+  useEffect(() => {
+    if (itemSelected) {
+      setValueSelected(itemSelected);
+      return;
+    }
+
+    const selectedItem = data.find(item => item.isSelected);
+    setValueSelected(selectedItem);
+  }, [data, itemSelected]);
+
+  const defaultData = useMemo(() => {
+    const selectedValue = itemSelected?.value ?? valueSelected?.value;
+    const mappedData = data.map(item => ({
+      ...item,
+      isSelected: item.value === selectedValue || item.isSelected,
+    }));
+
+    if (!filterOption || !searchValue.trim()) {
+      return mappedData;
+    }
+
+    const normalizedSearch = searchValue.trim().toLowerCase();
+    return mappedData.filter(item =>
+      item.name.toLowerCase().includes(normalizedSearch),
+    );
+  }, [data, filterOption, itemSelected?.value, searchValue, valueSelected?.value]);
+
+  const placeholder = `Chọn ${label?.toLowerCase() || ''}`;
+  const displayValue = valueSelected?.name
+    ? `${valueSelected.name}${unit ? ` ${unit}` : ''}`
+    : placeholder;
+
+  const openSheet = useCallback(() => {
+    if (disabled) {
+      return;
+    }
+
+    Keyboard.dismiss();
+    refbottomSheet.current?.open();
+  }, [disabled]);
+
+  const clearSelected = useCallback(() => {
+    Keyboard.dismiss();
+    setValueSelected(undefined);
+    onSelected?.(undefined);
+  }, [onSelected]);
+
+  const selectItem = useCallback(
+    (item: ItemSelectProduct) => {
+      if (item.canPress === false) {
+        return;
+      }
+
+      Keyboard.dismiss();
+      refbottomSheet.current?.close();
+      const nextItem = { ...item, isSelected: true };
+      setValueSelected(nextItem);
+      onSelected?.(nextItem);
+    },
+    [onSelected],
+  );
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+      onChangeTextSearch?.(value);
+    },
+    [onChangeTextSearch],
+  );
+
+  const handleEndReached = useCallback(() => {
+    if (isPaging && !isLoadmore && !loading) {
+      onPaging?.();
+    }
+  }, [isLoadmore, isPaging, loading, onPaging]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ItemSelectProduct }) => {
+      const isSelected = item.value === valueSelected?.value || item.isSelected;
+      const isDisabledItem = isSelected || item.canPress === false;
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.82}
+          disabled={isDisabledItem}
+          onPress={() => selectItem(item)}
+          style={[
+            styles.item,
+            isSelected && styles.itemSelected,
+            item.canPress === false && styles.itemDisabled,
+          ]}
+        >
+          <Text
+            numberOfLines={2}
+            style={[
+              styles.itemText,
+              isSelected && styles.itemTextSelected,
+              item.canPress === false && styles.itemTextDisabled,
+            ]}
+          >
+            {item.name}
+            {unit ? ` ${unit}` : ''}
+          </Text>
+          {isSelected ? <Text style={styles.checkMark}>✓</Text> : null}
+        </TouchableOpacity>
+      );
+    },
+    [selectItem, unit, valueSelected?.value],
+  );
+
+  const keyExtractor = useCallback(
+    (item: ItemSelectProduct, index: number) =>
+      `${item.id ?? item.value ?? index}`,
+    [],
+  );
+
+  const renderEmpty = useCallback(
+    () => (
+      <View style={styles.empty}>
+        {loading ? (
+          <ActivityIndicator color="#2563EB" size="small" />
+        ) : (
+          <Text style={styles.emptyText}>Không có dữ liệu</Text>
+        )}
+      </View>
+    ),
+    [loading],
+  );
+
+  const renderFooter = useCallback(() => {
+    if (!loading && !isLoadmore) {
+      return null;
+    }
+
+    return (
+      <View style={styles.footerLoading}>
+        <ActivityIndicator color="#2563EB" size="small" />
+      </View>
+    );
+  }, [isLoadmore, loading]);
+
+  return (
+    <View style={[styles.container, selectStyle]}>
+      <TouchableOpacity
+        activeOpacity={0.82}
+        disabled={disabled}
+        onPress={openSheet}
+        style={[
+          styles.selectButton,
+          containerStyle,
+          disabled && styles.selectButtonDisabled,
+          isHighlightCopy && !disabled && styles.selectButtonHighlight,
+          error && styles.selectButtonError,
+        ]}
+      >
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.selectText,
+            !valueSelected?.name && styles.placeholderText,
+            disabled && styles.disabledText,
+            textStyle,
+          ]}
+        >
+          {displayValue}
+        </Text>
+        {valueSelected?.name && !disabled ? (
+          <TouchableOpacity
+            activeOpacity={0.72}
+            hitSlop={{ bottom: 10, left: 10, right: 10, top: 10 }}
+            onPress={clearSelected}
+            style={styles.clearButton}
+          >
+            <Text style={styles.clearIcon}>×</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={[styles.chevron, disabled && styles.disabledText]}>
+            ▾
+          </Text>
+        )}
+      </TouchableOpacity>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      <BottomSheet
+        ref={refbottomSheet}
+        keyboardVerticalOffset={keyboardVerticalOffset}
+        snapHeight={snapHeight}
+      >
+        <View style={styles.sheetHeader}>
+          <Text style={styles.sheetTitle}>{placeholder}</Text>
+          {searchBox ? (
+            <TextInput
+              autoCorrect={false}
+              onChangeText={handleSearchChange}
+              placeholder={`Tìm ${label?.toLowerCase() || ''}`}
+              placeholderTextColor="rgba(255,255,255,0.45)"
+              style={[styles.searchInput, searchInputStyle]}
+              value={searchValue}
+            />
+          ) : null}
+        </View>
+
+        <BottomSheetFlatList
+          data={defaultData}
+          keyExtractor={keyExtractor}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={renderEmpty}
+          ListFooterComponent={renderFooter}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.35}
+          renderItem={renderItem}
+          contentContainerStyle={[
+            styles.sheetContent,
+            defaultData.length === 0 && styles.sheetContentEmpty,
+          ]}
+        />
+      </BottomSheet>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+  },
+  selectButton: {
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(0, 53, 128, 0.2)',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 52,
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+  },
+  selectButtonDisabled: {
+    backgroundColor: 'rgba(0, 53, 128, 0.04)',
+  },
+  selectButtonHighlight: {
+    backgroundColor: '#FFF7D6',
+  },
+  selectButtonError: {
+    borderColor: 'red',
+  },
+  selectText: {
+    color: 'rgba(0, 0, 0, 0.8)',
+    flex: 1,
+    fontSize: 14,
+    marginRight: 8,
+  },
+  placeholderText: {
+    color: 'rgba(0, 0, 0, 0.4)',
+  },
+  disabledText: {
+    color: 'rgba(0, 0, 0, 0.25)',
+  },
+  clearButton: {
+    alignItems: 'center',
+    height: 28,
+    justifyContent: 'center',
+    width: 28,
+  },
+  clearIcon: {
+    color: 'rgba(0, 0, 0, 0.55)',
+    fontSize: 22,
+    lineHeight: 24,
+  },
+  chevron: {
+    color: 'rgba(0, 0, 0, 0.25)',
+    fontSize: 18,
+    marginLeft: 8,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 12,
+    marginTop: 6,
+  },
+  sheetHeader: {
+    paddingBottom: 10,
+    paddingHorizontal: 20,
+  },
+  sheetTitle: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  searchInput: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 8,
+    borderWidth: 1,
+    color: '#FFFFFF',
+    fontSize: 15,
+    height: 44,
+    paddingHorizontal: 12,
+  },
+  sheetContent: {
+    paddingBottom: 28,
+    paddingHorizontal: 20,
+  },
+  sheetContentEmpty: {
+    flexGrow: 1,
+  },
+  item: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: 'row',
+    marginBottom: 10,
+    minHeight: 52,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  itemSelected: {
+    backgroundColor: 'rgba(37,99,235,0.28)',
+    borderColor: 'rgba(96,165,250,0.55)',
+  },
+  itemDisabled: {
+    opacity: 0.46,
+  },
+  itemText: {
+    color: '#FFFFFF',
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  itemTextSelected: {
+    fontWeight: '700',
+  },
+  itemTextDisabled: {
+    color: 'rgba(255,255,255,0.6)',
+  },
+  checkMark: {
+    color: '#93C5FD',
+    fontSize: 18,
+    fontWeight: '700',
+    marginLeft: 12,
+  },
+  empty: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 260,
+  },
+  emptyText: {
+    color: 'rgba(255,255,255,0.68)',
+    fontSize: 15,
+  },
+  footerLoading: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+});
