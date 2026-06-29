@@ -17,6 +17,28 @@ export interface FormItemRenderProps extends FormProps {
   item: FormItemsProps;
   resetError?: () => void;
 }
+
+export type SelectGroupMode = 'single' | 'multi';
+
+export type SelectGroupValue =
+  | ItemSelectProduct
+  | ItemSelectProduct[]
+  | undefined;
+
+export type SelectGroupValues = Record<string, SelectGroupValue>;
+
+export interface SelectGroupConfig {
+  key: string;
+  label: string;
+  mode: SelectGroupMode;
+  data: ItemSelectProduct[];
+  value?: SelectGroupValue;
+  maxSelected?: number;
+  minSelected?: number;
+  required?: boolean;
+  searchBox?: boolean;
+}
+
 export interface ItemSelectProduct {
   id: number;
   name: string;
@@ -73,6 +95,7 @@ export interface FormItemsProps {
     | 'INSERTVIEW'
     | 'TREE_SELECT'
     | 'MULTI_SELECT_NEW'
+    | 'GROUP_SELECT'
     | 'IMPUT_HTML'
     | 'INPUT_SELECT'
     | 'MONTH_YEAR';
@@ -110,6 +133,7 @@ export interface FormItemsProps {
   canLoadMore?: boolean;
   vertical?: boolean;
   maxSelected?: number;
+  submitMode?: 'immediate' | 'confirm';
   isMoney?: boolean;
   valueOther?: string | number | ItemSelectProduct | Array<ItemGroupTextInput>;
   minValue?: number | Date | string;
@@ -136,4 +160,5 @@ export interface FormItemsProps {
   mode?: 'date' | 'time' | 'datetime';
   labelSelect?: string;
   isHasSelectOld?: boolean;
+  selectGroups?: SelectGroupConfig[];
 }

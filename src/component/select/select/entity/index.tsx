@@ -61,4 +61,5 @@ export interface SelectMultiProps {
   snapHeight?: number;
   keyboardVerticalOffset?: number;
   maxSelected?: number;
+  submitMode?: 'immediate' | 'confirm';
 }

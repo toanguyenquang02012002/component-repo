@@ -9,6 +9,7 @@ import { InputForm } from '../../input/inputForm';
 import { SelectForm } from '../../select/selectForm';
 import { FormItemsProps, FormProps, FormRef } from './entity';
 import { SelectMultiForm } from '../../select/multiselectForm';
+import { GroupSelectForm } from '../../select/groupSelectForm';
 
 export const Form = forwardRef<FormRef, FormProps>(
   ({ data, onChangeText, onChangeTextSearch, onPaging, onSelected }, ref) => {
@@ -64,6 +65,22 @@ export const Form = forwardRef<FormRef, FormProps>(
           return (
             <View style={styles.item} key={item.key}>
               <SelectMultiForm
+                key={item.key}
+                data={data}
+                index={index}
+                item={item}
+                onChangeText={onChangeText}
+                onChangeTextSearch={onChangeTextSearch}
+                onPaging={onPaging}
+                onSelected={onSelected}
+                resetError={() => resetError(index)}
+              />
+            </View>
+          );
+        case 'GROUP_SELECT':
+          return (
+            <View style={styles.item} key={item.key}>
+              <GroupSelectForm
                 key={item.key}
                 data={data}
                 index={index}

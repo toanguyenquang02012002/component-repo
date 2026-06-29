@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { forwardRef, useContext, useMemo } from 'react';
 import { FlatList, FlatListProps, StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { BottomSheetContext } from '../bottomsheet';
@@ -8,10 +8,10 @@ export interface BottomSheetFlatListProps<T>
   style?: StyleProp<ViewStyle>;
 }
 
-export function BottomSheetFlatList<T>({
-  style,
-  ...rest
-}: BottomSheetFlatListProps<T>): React.ReactElement {
+function BottomSheetFlatListInner<T>(
+  { style, ...rest }: BottomSheetFlatListProps<T>,
+  ref: React.ForwardedRef<FlatList<T>>,
+): React.ReactElement {
   const { notifyAtTop, contentPanGesture } = useContext(BottomSheetContext);
 
   const nativeScrollGesture = useMemo(() => {
@@ -25,6 +25,7 @@ export function BottomSheetFlatList<T>({
   return (
     <GestureDetector gesture={nativeScrollGesture}>
       <FlatList
+        ref={ref}
         style={style}
         scrollEventThrottle={16}
         onScroll={event => {
@@ -36,3 +37,7 @@ export function BottomSheetFlatList<T>({
     </GestureDetector>
   );
 }
+
+export const BottomSheetFlatList = forwardRef(BottomSheetFlatListInner) as <T>(
+  props: BottomSheetFlatListProps<T> & { ref?: React.ForwardedRef<FlatList<T>> },
+) => React.ReactElement;

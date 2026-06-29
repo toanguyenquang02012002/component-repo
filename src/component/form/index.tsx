@@ -1,2 +1,8 @@
 export * from './form';
-export type { FormItemsProps } from './form/entity';
+export type {
+  FormItemsProps,
+  SelectGroupConfig,
+  SelectGroupMode,
+  SelectGroupValue,
+  SelectGroupValues,
+} from './form/entity';
