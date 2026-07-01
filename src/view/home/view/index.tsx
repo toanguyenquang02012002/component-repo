@@ -1,6 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Form, FormItemsProps, ItemSelectProduct } from '../../../component';
+import {
+  Form,
+  FormItemsProps,
+  ItemSelectProduct,
+  SelectGroupValues,
+} from '../../../component';
 import { Text } from 'react-native-gesture-handler';
 import { FormRef } from '../../../component/form/form/entity';
 
@@ -277,6 +282,97 @@ const demoMultiSelect: ItemSelectProduct[] = [
   },
 ];
 
+const loanPurposes: ItemSelectProduct[] = [
+  { id: 201, name: 'Mua xe', value: 'buy-car', isSelected: false },
+  { id: 202, name: 'Mua nhà', value: 'buy-house', isSelected: false },
+  { id: 203, name: 'Tiêu dùng cá nhân', value: 'personal', isSelected: false },
+  { id: 204, name: 'Kinh doanh', value: 'business', isSelected: false },
+];
+
+const incomeSources: ItemSelectProduct[] = [
+  {
+    id: 301,
+    name: 'Lương chuyển khoản',
+    value: 'salary-bank',
+    isSelected: false,
+  },
+  { id: 302, name: 'Lương tiền mặt', value: 'salary-cash', isSelected: false },
+  { id: 303, name: 'Cho thuê tài sản', value: 'rental', isSelected: false },
+  {
+    id: 304,
+    name: 'Kinh doanh hộ gia đình',
+    value: 'household-business',
+    isSelected: false,
+  },
+  { id: 305, name: 'Nguồn thu khác', value: 'other-income', isSelected: false },
+];
+
+const collateralTypes: ItemSelectProduct[] = [
+  {
+    id: 401,
+    name: 'Không tài sản đảm bảo',
+    value: 'unsecured',
+    isSelected: false,
+  },
+  { id: 402, name: 'Ô tô', value: 'car', isSelected: false },
+  { id: 403, name: 'Bất động sản', value: 'real-estate', isSelected: false },
+  { id: 404, name: 'Sổ tiết kiệm', value: 'saving-book', isSelected: false },
+];
+
+const productByLoanPurpose: Record<string, ItemSelectProduct[]> = {
+  'buy-car': [
+    {
+      id: 501,
+      name: 'Vay mua ô tô mới',
+      value: 'new-car-loan',
+      isSelected: false,
+    },
+    {
+      id: 502,
+      name: 'Vay mua ô tô cũ',
+      value: 'used-car-loan',
+      isSelected: false,
+    },
+  ],
+  'buy-house': [
+    { id: 503, name: 'Vay mua nhà ở', value: 'home-loan', isSelected: false },
+    {
+      id: 504,
+      name: 'Vay sửa chữa nhà',
+      value: 'home-renovation',
+      isSelected: false,
+    },
+  ],
+  personal: [
+    {
+      id: 505,
+      name: 'Vay tiêu dùng tín chấp',
+      value: 'personal-unsecured',
+      isSelected: false,
+    },
+    {
+      id: 506,
+      name: 'Vay mua hàng trả góp',
+      value: 'installment-loan',
+      isSelected: false,
+    },
+  ],
+  business: [
+    {
+      id: 507,
+      name: 'Vay bổ sung vốn kinh doanh',
+      value: 'working-capital',
+      isSelected: false,
+    },
+    {
+      id: 508,
+      name: 'Vay đầu tư thiết bị',
+      value: 'equipment-loan',
+      isSelected: false,
+    },
+  ],
+};
+
 export const formSelectNew = (): Array<FormItemsProps> => [
   {
     key: 'current_Address',
@@ -285,6 +381,51 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     value: '',
     error: '',
     isRequire: true,
+    dataRadio: [],
+    dataSelect: [],
+    disabled: false,
+    searchBox: true,
+    textSearch: '',
+    filterOption: true,
+  },
+  {
+    key: 'birth_date',
+    type: 'DATE',
+    label: 'Ngày sinh',
+    value: '',
+    error: '',
+    isRequire: true,
+    dataRadio: [],
+    dataSelect: [],
+    disabled: false,
+    minValue: '01/01/1900',
+    maxValue: new Date(),
+    mode: 'date',
+    searchBox: true,
+    textSearch: '',
+    filterOption: true,
+  },
+  {
+    key: 'issue_year',
+    type: 'YEAR',
+    label: 'Năm cấp',
+    value: '',
+    error: '',
+    isRequire: false,
+    dataRadio: [],
+    dataSelect: [],
+    disabled: false,
+    searchBox: true,
+    textSearch: '',
+    filterOption: true,
+  },
+  {
+    key: 'salary_month',
+    type: 'MONTH_YEAR',
+    label: 'Tháng lương',
+    value: '',
+    error: '',
+    isRequire: false,
     dataRadio: [],
     dataSelect: [],
     disabled: false,
@@ -337,6 +478,66 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     textSearch: '',
     filterOption: true,
     maxSelected: 3,
+    submitMode: 'confirm',
+  },
+  {
+    key: 'GROUP_FILTER',
+    type: 'GROUP_SELECT',
+    label: 'Bộ lọc nâng cao',
+    value: {},
+    error: '',
+    isRequire: false,
+    dataRadio: [],
+    dataSelect: [],
+    disabled: false,
+    searchBox: true,
+    textSearch: '',
+    filterOption: true,
+    selectGroups: [
+      {
+        key: 'loanPurpose',
+        label: 'Mục đích vay',
+        mode: 'single',
+        data: loanPurposes,
+        required: true,
+      },
+      {
+        key: 'province',
+        label: 'Khu vực',
+        mode: 'single',
+        data: provinces.slice(0, 8),
+      },
+      {
+        key: 'incomeSources',
+        label: 'Nguồn thu nhập',
+        mode: 'multi',
+        data: incomeSources,
+        maxSelected: 3,
+      },
+      {
+        key: 'collateralTypes',
+        label: 'Tài sản đảm bảo',
+        mode: 'multi',
+        data: collateralTypes,
+        maxSelected: 2,
+        minSelected: 1,
+      },
+    ],
+  },
+  {
+    key: 'GROUP_RESULT_SELECT',
+    type: 'SELECT',
+    label: 'Sản phẩm theo bộ lọc',
+    multiline: true,
+    value: '',
+    error: '',
+    isRequire: false,
+    dataRadio: [],
+    dataSelect: [],
+    disabled: false,
+    searchBox: true,
+    textSearch: '',
+    filterOption: true,
   },
 ];
 
@@ -360,28 +561,83 @@ export function HomeScreen(): React.ReactElement {
           };
           setFormSelect(tmp);
         }}
-        onSelected={(value: ItemSelectProduct | undefined, index) => {
+        onChangeDate={(value, index) => {
+          const tmp = [...formSelect];
+          tmp[index] = {
+            ...tmp[index],
+            value: value ?? '',
+            error: '',
+          };
+          setFormSelect(tmp);
+        }}
+        onSelected={(
+          value:
+            | ItemSelectProduct
+            | ItemSelectProduct[]
+            | SelectGroupValues
+            | undefined,
+          index,
+        ) => {
           const tmp = [...formSelect];
 
           if (value) {
             tmp[index] = { ...tmp[index], value };
 
-            if (index === 1) {
-              tmp[1].error = '';
-              tmp[2] = {
-                ...tmp[2],
-                value: '',
-                dataSelect: wardsByProvince[value.value] ?? [],
-              };
+            if (
+              tmp[index].key === 'province_new' &&
+              !Array.isArray(value) &&
+              'value' in value &&
+              typeof value.value === 'string'
+            ) {
+              const wardIndex = tmp.findIndex(
+                item => item.key === 'district_new',
+              );
+              tmp[index].error = '';
+              if (wardIndex >= 0) {
+                tmp[wardIndex] = {
+                  ...tmp[wardIndex],
+                  value: '',
+                  dataSelect: wardsByProvince[value.value] ?? [],
+                };
+              }
+            }
+
+            if (
+              tmp[index].key === 'GROUP_FILTER' &&
+              !Array.isArray(value) &&
+              typeof value === 'object'
+            ) {
+              const groupValue = value as SelectGroupValues;
+              const loanPurpose = groupValue.loanPurpose;
+              const resultSelectIndex = tmp.findIndex(
+                item => item.key === 'GROUP_RESULT_SELECT',
+              );
+
+              if (
+                resultSelectIndex >= 0 &&
+                loanPurpose &&
+                !Array.isArray(loanPurpose)
+              ) {
+                tmp[resultSelectIndex] = {
+                  ...tmp[resultSelectIndex],
+                  value: '',
+                  dataSelect: productByLoanPurpose[loanPurpose.value] ?? [],
+                };
+              }
             }
           } else {
             tmp[index] = { ...tmp[index], value: '' };
-            if (index === 1) {
-              tmp[2] = {
-                ...tmp[2],
-                value: '',
-                dataSelect: [],
-              };
+            if (tmp[index].key === 'province_new') {
+              const wardIndex = tmp.findIndex(
+                item => item.key === 'district_new',
+              );
+              if (wardIndex >= 0) {
+                tmp[wardIndex] = {
+                  ...tmp[wardIndex],
+                  value: '',
+                  dataSelect: [],
+                };
+              }
             }
           }
 

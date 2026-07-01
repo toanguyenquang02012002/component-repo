@@ -7,6 +7,11 @@ export interface FormRef {
 export interface FormProps {
   data: Array<FormItemsProps>;
   onChangeText?: (value: string, index: number, key: string) => void;
+  onChangeDate?: (
+    value: Date | string | undefined,
+    index: number,
+    key: string,
+  ) => void;
   onChangeTextSearch?: (value: string, index: number, key: string) => void;
   onPaging?: (index: number, key: string) => void;
   onSelected?: (value: any, index: number, key: string) => void;

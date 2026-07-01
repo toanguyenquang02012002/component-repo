@@ -61,6 +61,7 @@ export const SelectMultiForm = ({
         resetError?.();
       }}
       searchBox={item.searchBox}
+      submitMode={item.submitMode}
       textSearch={item.textSearch}
       unit={item.unit}
     />

@@ -10,9 +10,20 @@ import { SelectForm } from '../../select/selectForm';
 import { FormItemsProps, FormProps, FormRef } from './entity';
 import { SelectMultiForm } from '../../select/multiselectForm';
 import { GroupSelectForm } from '../../select/groupSelectForm';
+import { DatePickerForm } from '../../datePicker/datePickerForm';
 
 export const Form = forwardRef<FormRef, FormProps>(
-  ({ data, onChangeText, onChangeTextSearch, onPaging, onSelected }, ref) => {
+  (
+    {
+      data,
+      onChangeDate,
+      onChangeText,
+      onChangeTextSearch,
+      onPaging,
+      onSelected,
+    },
+    ref,
+  ) => {
     const resetError = (index?: number) => {
       if (typeof index === 'number') {
         data[index].error = '';
@@ -53,6 +64,25 @@ export const Form = forwardRef<FormRef, FormProps>(
                 data={data}
                 index={index}
                 item={item}
+                onChangeText={onChangeText}
+                onChangeTextSearch={onChangeTextSearch}
+                onPaging={onPaging}
+                onSelected={onSelected}
+                resetError={() => resetError(index)}
+              />
+            </View>
+          );
+        case 'DATE':
+        case 'YEAR':
+        case 'MONTH_YEAR':
+          return (
+            <View style={styles.item} key={item.key}>
+              <DatePickerForm
+                key={item.key}
+                data={data}
+                index={index}
+                item={item}
+                onChangeDate={onChangeDate}
                 onChangeText={onChangeText}
                 onChangeTextSearch={onChangeTextSearch}
                 onPaging={onPaging}

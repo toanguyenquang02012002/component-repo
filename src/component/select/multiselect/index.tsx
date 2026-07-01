@@ -46,10 +46,12 @@ export const SelectMulti = ({
   snapHeight = DEFAULT_SHEET_HEIGHT,
   keyboardVerticalOffset = 96,
   maxSelected,
+  submitMode = 'immediate',
 }: SelectMultiProps) => {
   const refbottomSheet = useRef<BottomSheetRef>(null);
   const [searchValue, setSearchValue] = useState(textSearch ?? '');
   const [valueSelected, setValueSelected] = useState<ItemSelectProduct[]>([]);
+  const [draftSelected, setDraftSelected] = useState<ItemSelectProduct[]>([]);
 
   useEffect(() => {
     setSearchValue(textSearch ?? '');
@@ -58,18 +60,22 @@ export const SelectMulti = ({
   useEffect(() => {
     if (itemSelected) {
       setValueSelected(itemSelected);
+      setDraftSelected(itemSelected);
       return;
     }
 
     const selectedItem = data.filter(item => item?.isSelected);
     setValueSelected(selectedItem);
+    setDraftSelected(selectedItem);
   }, [data, itemSelected]);
 
+  const activeSelected =
+    submitMode === 'confirm' ? draftSelected : valueSelected;
+
   const defaultData = useMemo(() => {
-    const selectedValue = itemSelected ?? valueSelected;
     const mappedData = data.map(item => ({
       ...item,
-      isSelected: selectedValue.some(i => i?.value === item?.value),
+      isSelected: activeSelected.some(i => i?.value === item?.value),
     }));
 
     if (!filterOption || !searchValue.trim()) {
@@ -80,7 +86,7 @@ export const SelectMulti = ({
     return mappedData.filter(item =>
       item.name.toLowerCase().includes(normalizedSearch),
     );
-  }, [data, filterOption, itemSelected, searchValue, valueSelected]);
+  }, [activeSelected, data, filterOption, searchValue]);
 
   const placeholder = `Chọn ${label?.toLowerCase() || ''}`;
   const displayValue = valueSelected.length
@@ -93,12 +99,14 @@ export const SelectMulti = ({
     }
 
     Keyboard.dismiss();
+    setDraftSelected(valueSelected);
     refbottomSheet.current?.open();
-  }, [disabled]);
+  }, [disabled, valueSelected]);
 
   const clearSelected = useCallback(() => {
     Keyboard.dismiss();
     setValueSelected([]);
+    setDraftSelected([]);
     onSelected?.([]);
   }, [onSelected]);
 
@@ -109,7 +117,7 @@ export const SelectMulti = ({
       }
 
       Keyboard.dismiss();
-      setValueSelected(prev => {
+      const updateSelected = (prev: ItemSelectProduct[]) => {
         const existed = prev.some(i => i.value === item.value);
         if (!existed && maxSelected && prev.length >= maxSelected) {
           return prev;
@@ -118,11 +126,20 @@ export const SelectMulti = ({
           ? prev.filter(i => i.value !== item.value)
           : [...prev, { ...item, isSelected: true }];
 
-        onSelected?.(nextSelected);
+        if (submitMode === 'immediate') {
+          onSelected?.(nextSelected);
+        }
         return nextSelected;
-      });
+      };
+
+      if (submitMode === 'confirm') {
+        setDraftSelected(updateSelected);
+        return;
+      }
+
+      setValueSelected(updateSelected);
     },
-    [onSelected],
+    [maxSelected, onSelected, submitMode],
   );
 
   const handleSearchChange = useCallback(
@@ -142,7 +159,7 @@ export const SelectMulti = ({
   const renderItem = useCallback(
     ({ item }: { item: ItemSelectProduct }) => {
       const isSelected =
-        valueSelected.some(i => i.value === item.value) || item.isSelected;
+        activeSelected.some(i => i.value === item.value) || item.isSelected;
       const isDisabledItem = item.canPress === false;
 
       return (
@@ -171,7 +188,7 @@ export const SelectMulti = ({
         </TouchableOpacity>
       );
     },
-    [selectItem, unit, valueSelected],
+    [activeSelected, selectItem, unit],
   );
 
   const keyExtractor = useCallback(
@@ -278,9 +295,25 @@ export const SelectMulti = ({
           renderItem={renderItem}
           contentContainerStyle={[
             styles.sheetContent,
+            submitMode === 'confirm' && styles.sheetContentWithFooter,
             defaultData.length === 0 && styles.sheetContentEmpty,
           ]}
         />
+        {submitMode === 'confirm' ? (
+          <View style={styles.footerAbsolute}>
+            <TouchableOpacity
+              activeOpacity={0.82}
+              onPress={() => {
+                refbottomSheet.current?.close();
+                setValueSelected(draftSelected);
+                onSelected?.(draftSelected);
+              }}
+              style={styles.applyButton}
+            >
+              <Text style={styles.applyText}>Áp dụng</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </BottomSheet>
     </View>
   );
@@ -364,8 +397,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   sheetContent: {
-    paddingBottom: 28,
+    paddingBottom: 140,
     paddingHorizontal: 20,
+  },
+  sheetContentWithFooter: {
+    paddingBottom: 112,
   },
   sheetContentEmpty: {
     flexGrow: 1,
@@ -420,5 +456,29 @@ const styles = StyleSheet.create({
   footerLoading: {
     alignItems: 'center',
     paddingVertical: 16,
+  },
+  footerAbsolute: {
+    backgroundColor: 'rgba(15,10,26,0.98)',
+    borderTopColor: 'rgba(255,255,255,0.10)',
+    borderTopWidth: 1,
+    bottom: 0,
+    left: 0,
+    paddingBottom: 18,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    position: 'absolute',
+    right: 0,
+  },
+  applyButton: {
+    alignItems: 'center',
+    backgroundColor: '#2563EB',
+    borderRadius: 8,
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  applyText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
