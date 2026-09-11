@@ -111,30 +111,52 @@ export const GroupSelect = ({
       return;
     }
 
-    setDraftValues(prev => {
-      if (group.mode === 'single') {
-        return {
-          ...prev,
-          [group.key]: { ...item, isSelected: true },
-        };
+    // setDraftValues(prev => {
+    //   if (group.mode === 'single') {
+    //     return {
+    //       ...prev,
+    //       [group.key]: { ...item, isSelected: true },
+    //     };
+    //   }
+
+    //   const current = Array.isArray(prev[group.key])
+    //     ? (prev[group.key] as ItemSelectProduct[])
+    //     : [];
+    //   const existed = current.some(i => i.value === item.value);
+    //   const next = existed
+    //     ? current.filter(i => i.value !== item.value)
+    //     : group.maxSelected && current.length >= group.maxSelected
+    //     ? current
+    //     : [...current, { ...item, isSelected: true }];
+
+    //   return {
+    //     ...prev,
+    //     [group.key]: next,
+    //   };
+    // });
+    // const tmpValue = [...(draftValues[group.key] as ItemSelectProduct[])];
+
+    const nextDraftValues = {
+      ...draftValues,
+    };
+
+    if (group?.mode == 'single') {
+      nextDraftValues[group?.key] = { ...item, isSelected: true };
+    } else {
+      if (Array.isArray(nextDraftValues[group?.key])) {
+        const current = nextDraftValues[group?.key] as ItemSelectProduct[];
+        const existed = current.some(i => i.value === item.value);
+        const next = existed
+          ? current.filter(i => i.value !== item.value)
+          : group.maxSelected && current.length >= group.maxSelected
+          ? current
+          : [...current, { ...item, isSelected: true }];
+
+        nextDraftValues[group?.key] = next;
       }
+    }
 
-      const current = Array.isArray(prev[group.key])
-        ? (prev[group.key] as ItemSelectProduct[])
-        : [];
-      const existed = current.some(i => i.value === item.value);
-      const next = existed
-        ? current.filter(i => i.value !== item.value)
-        : group.maxSelected && current.length >= group.maxSelected
-        ? current
-        : [...current, { ...item, isSelected: true }];
-
-      return {
-        ...prev,
-        [group.key]: next,
-      };
-    });
-
+    setDraftValues(nextDraftValues);
     if (groupErrors[group.key]) {
       setGroupErrors(prev => {
         const next = { ...prev };

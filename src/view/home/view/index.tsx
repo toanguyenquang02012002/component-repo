@@ -582,20 +582,17 @@ export function HomeScreen(): React.ReactElement {
 
           if (value) {
             tmp[index] = { ...tmp[index], value };
-
             if (
               tmp[index].key === 'province_new' &&
               !Array.isArray(value) &&
               'value' in value &&
               typeof value.value === 'string'
             ) {
-              const wardIndex = tmp.findIndex(
-                item => item.key === 'district_new',
-              );
+              const index = tmp.findIndex(item => item.key === 'district_new');
               tmp[index].error = '';
-              if (wardIndex >= 0) {
-                tmp[wardIndex] = {
-                  ...tmp[wardIndex],
+              if (index >= 0) {
+                tmp[index] = {
+                  ...tmp[index],
                   value: '',
                   dataSelect: wardsByProvince[value.value] ?? [],
                 };
