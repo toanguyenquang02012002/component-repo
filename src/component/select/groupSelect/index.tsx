@@ -205,6 +205,27 @@ export const GroupSelect = ({
   const clearValue = () => {
     const nextValues = groups.reduce<SelectGroupValues>((result, group) => {
       result[group.key] = group.mode === 'multi' ? [] : undefined;
+      // console.log('====================================');
+      // console.log(draftValues, group?.mode);
+      // console.log('====================================');
+      // console.log('clearValue nextValues', nextValues);
+      // console.log(result[group?.key]);
+
+      if (group?.mode == 'single') {
+        const value = draftValues[group?.key] as ItemSelectProduct;
+        if (!!value?.isNotRemoveBecauseInitial == true) {
+          result[group?.key] = value;
+        }
+      } else {
+        const value = draftValues[group?.key] as ItemSelectProduct[];
+        if (Array.isArray(value)) {
+          const next = value.filter(
+            i => !!i?.isNotRemoveBecauseInitial == true,
+          );
+          result[group?.key] = next;
+        }
+      }
+
       return result;
     }, {});
 

@@ -9,6 +9,7 @@ import {
 import { Text } from 'react-native-gesture-handler';
 import { FormRef } from '../../../component/form/form/entity';
 
+// hdsd FORM by author: toannq
 const provinces: ItemSelectProduct[] = [
   {
     id: 1,
@@ -484,7 +485,39 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     key: 'GROUP_FILTER',
     type: 'GROUP_SELECT',
     label: 'Bộ lọc nâng cao',
-    value: {},
+    value: {
+      loanPurpose: {
+        id: 204,
+        name: 'Kinh doanh',
+        value: 'business',
+        isSelected: true,
+        isNotRemoveBecauseInitial: true,
+      },
+      province: undefined,
+      incomeSources: [
+        {
+          id: 303,
+          name: 'Cho thuê tài sản',
+          value: 'rental',
+          isSelected: true,
+          isNotRemoveBecauseInitial: true,
+        },
+        {
+          id: 302,
+          name: 'Lương tiền mặt',
+          value: 'salary-cash',
+          isSelected: true,
+          // isNotRemoveBecauseInitial: true,
+        },
+        // collateralTypes: [
+        //   {
+        //     id: 404,
+        //     name: 'Sổ tiết kiệm',
+        //     value: 'saving-book',
+        //     isSelected: true,
+        //   },
+      ],
+    },
     error: '',
     isRequire: false,
     dataRadio: [],

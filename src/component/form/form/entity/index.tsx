@@ -53,6 +53,7 @@ export interface ItemSelectProduct {
   isSelected: boolean;
   isOtherValue?: any;
   canPress?: boolean;
+  isNotRemoveBecauseInitial?: boolean;
 }
 export interface ItemGroupTextInput {
   label: string;
