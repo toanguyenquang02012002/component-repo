@@ -7,6 +7,8 @@ export const InputForm = ({
   item,
   onChangeText,
   resetError,
+  onFocus,
+  onBlur,
 }: FormItemRenderProps) => {
   return (
     <Input
@@ -23,6 +25,12 @@ export const InputForm = ({
         item.value = value;
         onChangeText?.(value, index, item.key);
         resetError?.();
+      }}
+      onFocus={value => {
+        onFocus?.(value, index, item.key);
+      }}
+      onBlur={value => {
+        onBlur?.(value, index, item.key);
       }}
       showbgcl={item.showbgcl}
       showBorder={item.showBorder}

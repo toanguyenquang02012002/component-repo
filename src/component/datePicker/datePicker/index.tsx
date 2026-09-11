@@ -89,10 +89,7 @@ const getYearList = (centerYear: number, range = 50) => {
 };
 
 const getDayList = (month: string, year: string) => {
-  const daysInMonth = moment(
-    `${year}-${month}`,
-    'YYYY-MM',
-  ).daysInMonth();
+  const daysInMonth = moment(`${year}-${month}`, 'YYYY-MM').daysInMonth();
 
   return Array.from({ length: daysInMonth }, (_, index) => {
     const value = (index + 1).toString().padStart(2, '0');
@@ -217,6 +214,14 @@ export const DatePickerComponent = ({
   const [tmpYear, setTmpYear] = useState(monthYearValue.year);
   const [isChange, setIsChange] = useState(false);
 
+  const placeholder = `Chọn ${label.toLowerCase()}`;
+  const displayValue = formatDisplayValue(valueDate, type, mode);
+
+  const pickerWidth = Math.min(Math.max(width - 24, 320), 430);
+  const dayColumnWidth = pickerWidth * 0.28;
+  const monthColumnWidth = pickerWidth * 0.38;
+  const yearColumnWidth = pickerWidth * 0.34;
+
   useEffect(() => {
     setValueDate(value);
     const nextDate = parseDate(value) ?? new Date();
@@ -230,23 +235,20 @@ export const DatePickerComponent = ({
   }, [mode, type, value]);
 
   const minimumDate = useMemo(() => parseDate(minDate), [minDate]);
-  const yearList = useMemo(
-    () => getYearList(Number(tmpYear) || new Date().getFullYear()),
-    [tmpYear],
-  );
-  const dayList = useMemo(() => getDayList(tmpMonth, tmpYear), [
-    tmpMonth,
-    tmpYear,
-  ]);
 
+  const dayList = useMemo(
+    () => getDayList(tmpMonth, tmpYear),
+    [tmpMonth, tmpYear],
+  );
   useEffect(() => {
     if (!dayList.some(item => item.value === tmpDay)) {
       setTmpDay(dayList[dayList.length - 1].value);
     }
   }, [dayList, tmpDay]);
-
-  const placeholder = `Chọn ${label.toLowerCase()}`;
-  const displayValue = formatDisplayValue(valueDate, type, mode);
+  const yearList = useMemo(
+    () => getYearList(Number(tmpYear) || new Date().getFullYear()),
+    [],
+  );
 
   const openSheet = useCallback(() => {
     if (disabled) {
@@ -312,11 +314,6 @@ export const DatePickerComponent = ({
     type,
     valueTmp,
   ]);
-
-  const pickerWidth = Math.min(Math.max(width - 24, 320), 430);
-  const dayColumnWidth = pickerWidth * 0.28;
-  const monthColumnWidth = pickerWidth * 0.38;
-  const yearColumnWidth = pickerWidth * 0.34;
 
   return (
     <View style={styles.container}>

@@ -643,13 +643,20 @@ export function HomeScreen(): React.ReactElement {
 
           setFormSelect(tmp);
         }}
+        onFocus={(val, index, key) => {
+          // console.log('value::: ', formSelect[index]);
+        }}
+        onBlur={(val, index, key) => {
+          // console.log('onBlur::: ', formSelect[index]);
+        }}
       />
+      <TouchableOpacity />
       <TouchableOpacity
         onPress={() => {
-          // const tmp = [...formSelect];
-          // tmp[0].error = '1231231231';
-          // tmp[1].error = '1231231231';
-          // setFormSelect(tmp);
+          const tmp = [...formSelect];
+          tmp[0].error = '1231231231';
+          tmp[1].error = '1231231231';
+          setFormSelect(tmp);
           console.log(formSelect);
         }}
       >

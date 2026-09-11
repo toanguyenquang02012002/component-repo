@@ -15,6 +15,8 @@ export interface FormProps {
   onChangeTextSearch?: (value: string, index: number, key: string) => void;
   onPaging?: (index: number, key: string) => void;
   onSelected?: (value: any, index: number, key: string) => void;
+  onFocus?: (value: any, index: number, key: string) => void;
+  onBlur?: (value: any, index: number, key: string) => void;
 }
 
 export interface FormItemRenderProps extends FormProps {

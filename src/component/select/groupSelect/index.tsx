@@ -234,10 +234,16 @@ export const GroupSelect = ({
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <BottomSheet ref={refbottomSheet} keyboardVerticalOffset={96} snapHeight={620}>
+      <BottomSheet
+        ref={refbottomSheet}
+        keyboardVerticalOffset={96}
+        snapHeight={620}
+      >
         <View style={styles.sheetWrapper}>
           <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>{`Chọn ${label.toLowerCase()}`}</Text>
+            <Text
+              style={styles.sheetTitle}
+            >{`Chọn ${label.toLowerCase()}`}</Text>
           </View>
 
           <BottomSheetFlatList
@@ -257,13 +263,17 @@ export const GroupSelect = ({
                 <Text style={styles.groupTitle}>
                   {group.label}
                   {group.mode === 'multi' && group.maxSelected
-                    ? ` (${getValueLabel(draftValues[group.key])
-                        .split(',')
-                        .filter(Boolean).length}/${group.maxSelected})`
+                    ? ` (${
+                        getValueLabel(draftValues[group.key])
+                          .split(',')
+                          .filter(Boolean).length
+                      }/${group.maxSelected})`
                     : ''}
                 </Text>
                 {groupErrors[group.key] ? (
-                  <Text style={styles.groupError}>{groupErrors[group.key]}</Text>
+                  <Text style={styles.groupError}>
+                    {groupErrors[group.key]}
+                  </Text>
                 ) : null}
                 {group.data.map(option => {
                   const selected = isSelected(
@@ -291,7 +301,9 @@ export const GroupSelect = ({
                       >
                         {option.name}
                       </Text>
-                      {selected ? <Text style={styles.checkMark}>✓</Text> : null}
+                      {selected ? (
+                        <Text style={styles.checkMark}>✓</Text>
+                      ) : null}
                     </TouchableOpacity>
                   );
                 })}

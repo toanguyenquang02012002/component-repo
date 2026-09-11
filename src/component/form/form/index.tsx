@@ -21,6 +21,8 @@ export const Form = forwardRef<FormRef, FormProps>(
       onChangeTextSearch,
       onPaging,
       onSelected,
+      onFocus,
+      onBlur,
     },
     ref,
   ) => {
@@ -69,6 +71,8 @@ export const Form = forwardRef<FormRef, FormProps>(
                 onPaging={onPaging}
                 onSelected={onSelected}
                 resetError={() => resetError(index)}
+                onFocus={onFocus}
+                onBlur={onBlur}
               />
             </View>
           );
