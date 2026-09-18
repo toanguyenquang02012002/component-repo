@@ -388,6 +388,8 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     searchBox: true,
     textSearch: '',
     filterOption: true,
+    row: 'user',
+    flex: 1,
   },
   {
     key: 'birth_date',
@@ -405,6 +407,8 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     searchBox: true,
     textSearch: '',
     filterOption: true,
+    row: 'user',
+    flex: 1,
   },
   {
     key: 'issue_year',

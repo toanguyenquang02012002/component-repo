@@ -44,93 +44,101 @@ export const Form = forwardRef<FormRef, FormProps>(
       switch (item.type) {
         case 'SELECT':
           return (
-            <View style={styles.item} key={item.key}>
-              <SelectForm
-                key={item.key}
-                data={data}
-                index={index}
-                item={item}
-                onChangeText={onChangeText}
-                onChangeTextSearch={onChangeTextSearch}
-                onPaging={onPaging}
-                onSelected={onSelected}
-                resetError={() => resetError(index)}
-              />
-            </View>
+            <SelectForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onChangeText={onChangeText}
+              onChangeTextSearch={onChangeTextSearch}
+              onPaging={onPaging}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
           );
         case 'INPUT':
           return (
-            <View style={styles.item} key={item.key}>
-              <InputForm
-                key={item.key}
-                data={data}
-                index={index}
-                item={item}
-                onChangeText={onChangeText}
-                onChangeTextSearch={onChangeTextSearch}
-                onPaging={onPaging}
-                onSelected={onSelected}
-                resetError={() => resetError(index)}
-                onFocus={onFocus}
-                onBlur={onBlur}
-              />
-            </View>
+            <InputForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onChangeText={onChangeText}
+              onChangeTextSearch={onChangeTextSearch}
+              onPaging={onPaging}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+              onFocus={onFocus}
+              onBlur={onBlur}
+            />
           );
         case 'DATE':
         case 'YEAR':
         case 'MONTH_YEAR':
           return (
-            <View style={styles.item} key={item.key}>
-              <DatePickerForm
-                key={item.key}
-                data={data}
-                index={index}
-                item={item}
-                onChangeDate={onChangeDate}
-                onChangeText={onChangeText}
-                onChangeTextSearch={onChangeTextSearch}
-                onPaging={onPaging}
-                onSelected={onSelected}
-                resetError={() => resetError(index)}
-              />
-            </View>
+            <DatePickerForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onChangeDate={onChangeDate}
+              onChangeText={onChangeText}
+              onChangeTextSearch={onChangeTextSearch}
+              onPaging={onPaging}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
           );
         case 'MULTI_SELECT':
           return (
-            <View style={styles.item} key={item.key}>
-              <SelectMultiForm
-                key={item.key}
-                data={data}
-                index={index}
-                item={item}
-                onChangeText={onChangeText}
-                onChangeTextSearch={onChangeTextSearch}
-                onPaging={onPaging}
-                onSelected={onSelected}
-                resetError={() => resetError(index)}
-              />
-            </View>
+            <SelectMultiForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onChangeText={onChangeText}
+              onChangeTextSearch={onChangeTextSearch}
+              onPaging={onPaging}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
           );
         case 'GROUP_SELECT':
           return (
-            <View style={styles.item} key={item.key}>
-              <GroupSelectForm
-                key={item.key}
-                data={data}
-                index={index}
-                item={item}
-                onChangeText={onChangeText}
-                onChangeTextSearch={onChangeTextSearch}
-                onPaging={onPaging}
-                onSelected={onSelected}
-                resetError={() => resetError(index)}
-              />
-            </View>
+            <GroupSelectForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onChangeText={onChangeText}
+              onChangeTextSearch={onChangeTextSearch}
+              onPaging={onPaging}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
           );
         default:
           return null;
       }
     };
+
+    const groupedData = data.reduce<
+      Record<string, Array<{ item: FormItemsProps; index: number }>>
+    >((groups, item, index) => {
+      if (item.isShow === false) {
+        return groups;
+      }
+
+      const groupKey = item.row ?? `single-${index}`;
+
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+
+      groups[groupKey].push({ item, index });
+
+      return groups;
+    }, {});
 
     return (
       <TouchableWithoutFeedback
@@ -138,7 +146,29 @@ export const Form = forwardRef<FormRef, FormProps>(
           Keyboard.dismiss();
         }}
       >
-        <View style={styles.container}>{data.map(renderItem)}</View>
+        <View style={styles.container}>
+          {/* {data.map(renderItem)} */}
+          {Object.values(groupedData).map((items, groupIndex) => {
+            const isRow = items.length > 1;
+
+            return (
+              <View key={groupIndex} style={isRow ? styles.row : undefined}>
+                {items.map(({ item, index }) => (
+                  <View
+                    key={item.key}
+                    style={
+                      isRow
+                        ? [styles.column, { flex: item.flex ?? 1 }]
+                        : [styles.item]
+                    }
+                  >
+                    {renderItem(item, index)}
+                  </View>
+                ))}
+              </View>
+            );
+          })}
+        </View>
       </TouchableWithoutFeedback>
     );
   },
@@ -150,5 +180,13 @@ const styles = StyleSheet.create({
   },
   item: {
     marginBottom: 16,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  column: {
+    flex: 1,
   },
 });

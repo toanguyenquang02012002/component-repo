@@ -38,6 +38,7 @@ interface BottomSheetContextValue {
   // notifyDraggingSheet: (isDragging: boolean) => void;
   contentPanGesture: GestureType | null;
   // isDraggingSheet: boolean;
+  isScroll: boolean;
 }
 
 export const BottomSheetContext = createContext<BottomSheetContextValue>({
@@ -45,6 +46,7 @@ export const BottomSheetContext = createContext<BottomSheetContextValue>({
   // notifyDraggingSheet: () => {},
   contentPanGesture: null,
   // isDraggingSheet: false,
+  isScroll: true,
 });
 
 export interface BottomSheetRef {
@@ -87,6 +89,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     const notifyAtTop = useCallback((isAtTop: boolean) => {
       atTopRef.current = isAtTop;
+
       setAtTop(isAtTop);
     }, []);
 
@@ -264,16 +267,16 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           .activeOffsetY(8)
           .failOffsetY(-8)
           .onUpdate(event => {
-            const { translationY: dragY } = event;
-
-            // Content không ở top thì không cho bottom sheet di chuyển
-            if (!atTopRef.current) {
-              translateY.setValue(0);
-              return;
-            }
+            const { translationY: dragY, translationX: dragX } = event;
+            // if (!atTopRef.current) {
+            //   translateY.setValue(0);
+            //   return;
+            // }
 
             // Chỉ cho kéo xuống, không cho kéo lên
+            // if (dragX < 0) {
             translateY.setValue(Math.max(0, dragY));
+            // }
           })
           .onEnd(event => {
             if (!atTopRef.current) {
@@ -282,7 +285,6 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             }
 
             const dragY = Math.max(0, event.translationY);
-
             if (
               dragY > CLOSE_THRESHOLD ||
               event.velocityY > VELOCITY_THRESHOLD
@@ -349,7 +351,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
             <GestureDetector gesture={contentPanGesture}>
               <Animated.View style={styles.content}>
                 <BottomSheetContext.Provider
-                  value={{ notifyAtTop, contentPanGesture }}
+                  value={{
+                    notifyAtTop,
+                    contentPanGesture,
+                    isScroll: atTopRef.current,
+                  }}
                 >
                   {children}
                 </BottomSheetContext.Provider>

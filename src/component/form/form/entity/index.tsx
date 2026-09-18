@@ -169,4 +169,7 @@ export interface FormItemsProps {
   labelSelect?: string;
   isHasSelectOld?: boolean;
   selectGroups?: SelectGroupConfig[];
+
+  row?: string;
+  flex?: number;
 }
