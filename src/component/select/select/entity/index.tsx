@@ -1,5 +1,4 @@
 import { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { RadioProps } from '../../../form/form/entity';
 
 export interface ItemSelectProduct {
   id: number;
@@ -18,7 +17,6 @@ export interface SelectProps {
   data?: ItemSelectProduct[];
   error?: string;
   disabled?: boolean;
-  dataRadio?: Array<RadioProps>;
   isPaging?: boolean;
   onPaging?: () => void;
   isLoadmore?: boolean;
@@ -44,7 +42,6 @@ export interface SelectMultiProps {
   data?: ItemSelectProduct[];
   error?: string;
   disabled?: boolean;
-  dataRadio?: Array<RadioProps>;
   isPaging?: boolean;
   onPaging?: () => void;
   isLoadmore?: boolean;

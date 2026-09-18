@@ -283,6 +283,18 @@ const demoMultiSelect: ItemSelectProduct[] = [
   },
 ];
 
+const genderOptions: ItemSelectProduct[] = [
+  { id: 601, name: 'Nam', value: 'male', isSelected: true },
+  { id: 602, name: 'Nữ', value: 'female', isSelected: false },
+  { id: 603, name: 'Khác', value: 'other', isSelected: false },
+];
+
+const contactChannelOptions: ItemSelectProduct[] = [
+  { id: 701, name: 'Điện thoại', value: 'phone', isSelected: true },
+  { id: 702, name: 'Email', value: 'email', isSelected: false },
+  { id: 703, name: 'SMS', value: 'sms', isSelected: false },
+];
+
 const loanPurposes: ItemSelectProduct[] = [
   { id: 201, name: 'Mua xe', value: 'buy-car', isSelected: false },
   { id: 202, name: 'Mua nhà', value: 'buy-house', isSelected: false },
@@ -409,6 +421,32 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     filterOption: true,
     row: 'user',
     flex: 1,
+  },
+  {
+    key: 'gender',
+    type: 'RADIO',
+    label: 'Giới tính',
+    value: genderOptions[0],
+    error: '',
+    isRequire: true,
+    dataRadio: genderOptions,
+    dataSelect: [],
+    disabled: false,
+    vertical: false,
+  },
+  {
+    key: 'contact_channels',
+    type: 'MULTI_RADIO',
+    label: 'Kênh liên hệ',
+    value: [contactChannelOptions[0]],
+    error: '',
+    isRequire: true,
+    dataRadio: contactChannelOptions,
+    dataSelect: [],
+    disabled: false,
+    vertical: false,
+    minSelected: 1,
+    maxSelected: 2,
   },
   {
     key: 'issue_year',
@@ -612,24 +650,31 @@ export function HomeScreen(): React.ReactElement {
             | ItemSelectProduct
             | ItemSelectProduct[]
             | SelectGroupValues
+            | string
+            | number
+            | string[]
+            | number[]
             | undefined,
           index,
         ) => {
           const tmp = [...formSelect];
 
-          if (value) {
+          if (value !== undefined) {
             tmp[index] = { ...tmp[index], value };
             if (
               tmp[index].key === 'province_new' &&
               !Array.isArray(value) &&
+              typeof value === 'object' &&
               'value' in value &&
               typeof value.value === 'string'
             ) {
-              const index = tmp.findIndex(item => item.key === 'district_new');
-              tmp[index].error = '';
-              if (index >= 0) {
-                tmp[index] = {
-                  ...tmp[index],
+              const districtIndex = tmp.findIndex(
+                item => item.key === 'district_new',
+              );
+              if (districtIndex >= 0) {
+                tmp[districtIndex] = {
+                  ...tmp[districtIndex],
+                  error: '',
                   value: '',
                   dataSelect: wardsByProvince[value.value] ?? [],
                 };
@@ -676,12 +721,6 @@ export function HomeScreen(): React.ReactElement {
           }
 
           setFormSelect(tmp);
-        }}
-        onFocus={(val, index, key) => {
-          // console.log('value::: ', formSelect[index]);
-        }}
-        onBlur={(val, index, key) => {
-          // console.log('onBlur::: ', formSelect[index]);
         }}
       />
       <TouchableOpacity />

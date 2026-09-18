@@ -69,11 +69,6 @@ export interface GroupTextInputProps {
   disabled?: boolean;
   onBlurAction?: Function;
 }
-export interface RadioProps {
-  id: number | string | any;
-  label: string;
-  isChecked: boolean;
-}
 export interface FilterDashboardOrg {
   id: number;
   createdDate: string;
@@ -99,6 +94,8 @@ export interface FormItemsProps {
     | 'YEAR'
     | 'GROUPINPUT'
     | 'GROUPRADIO'
+    | 'RADIO'
+    | 'MULTI_RADIO'
     | 'MULTI_SELECT'
     | 'INSERTVIEW'
     | 'TREE_SELECT'
@@ -129,7 +126,7 @@ export interface FormItemsProps {
   error?: string;
   isRequire: boolean;
   isCloneRequire?: boolean;
-  dataRadio: Array<RadioProps>;
+  dataRadio: ItemSelectProduct[];
   dataSelect: ItemSelectProduct[];
   dataTree?: FilterDashboardOrg[];
   disabled: boolean;
@@ -141,6 +138,7 @@ export interface FormItemsProps {
   canLoadMore?: boolean;
   vertical?: boolean;
   maxSelected?: number;
+  minSelected?: number;
   submitMode?: 'immediate' | 'confirm';
   isMoney?: boolean;
   valueOther?: string | number | ItemSelectProduct | Array<ItemGroupTextInput>;

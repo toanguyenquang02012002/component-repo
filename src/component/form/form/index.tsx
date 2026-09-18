@@ -11,6 +11,8 @@ import { FormItemsProps, FormProps, FormRef } from './entity';
 import { SelectMultiForm } from '../../select/multiselectForm';
 import { GroupSelectForm } from '../../select/groupSelectForm';
 import { DatePickerForm } from '../../datePicker/datePickerForm';
+import { RadioForm } from '../../radio/radioForm';
+import { MultiRadioForm } from '../../radio/multiRadioForm';
 
 export const Form = forwardRef<FormRef, FormProps>(
   (
@@ -113,6 +115,29 @@ export const Form = forwardRef<FormRef, FormProps>(
               onChangeText={onChangeText}
               onChangeTextSearch={onChangeTextSearch}
               onPaging={onPaging}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
+          );
+        case 'RADIO':
+        case 'GROUPRADIO':
+          return (
+            <RadioForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
+          );
+        case 'MULTI_RADIO':
+          return (
+            <MultiRadioForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
               onSelected={onSelected}
               resetError={() => resetError(index)}
             />
