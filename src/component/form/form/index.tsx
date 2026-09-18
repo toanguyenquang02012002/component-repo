@@ -1,11 +1,12 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import {
   Keyboard,
+  ScrollView,
   StyleSheet,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { InputForm } from '../../input/inputForm';
+import { CurrencyForm } from '../../input/currencyForm';
 import { SelectForm } from '../../select/selectForm';
 import { FormItemsProps, FormProps, FormRef } from './entity';
 import { SelectMultiForm } from '../../select/multiselectForm';
@@ -13,6 +14,7 @@ import { GroupSelectForm } from '../../select/groupSelectForm';
 import { DatePickerForm } from '../../datePicker/datePickerForm';
 import { RadioForm } from '../../radio/radioForm';
 import { MultiRadioForm } from '../../radio/multiRadioForm';
+import { TreeSelectForm } from '../../treeSelect/treeSelectForm';
 
 export const Form = forwardRef<FormRef, FormProps>(
   (
@@ -59,6 +61,10 @@ export const Form = forwardRef<FormRef, FormProps>(
             />
           );
         case 'INPUT':
+        case 'TEXTAREA':
+        case 'PHONE':
+        case 'EMAIL':
+        case 'PASSWORD':
           return (
             <InputForm
               key={item.key}
@@ -69,6 +75,19 @@ export const Form = forwardRef<FormRef, FormProps>(
               onChangeTextSearch={onChangeTextSearch}
               onPaging={onPaging}
               onSelected={onSelected}
+              resetError={() => resetError(index)}
+              onFocus={onFocus}
+              onBlur={onBlur}
+            />
+          );
+        case 'CURRENCY':
+          return (
+            <CurrencyForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onChangeText={onChangeText}
               resetError={() => resetError(index)}
               onFocus={onFocus}
               onBlur={onBlur}
@@ -142,6 +161,17 @@ export const Form = forwardRef<FormRef, FormProps>(
               resetError={() => resetError(index)}
             />
           );
+        case 'TREE_SELECT':
+          return (
+            <TreeSelectForm
+              key={item.key}
+              data={data}
+              index={index}
+              item={item}
+              onSelected={onSelected}
+              resetError={() => resetError(index)}
+            />
+          );
         default:
           return null;
       }
@@ -166,42 +196,49 @@ export const Form = forwardRef<FormRef, FormProps>(
     }, {});
 
     return (
-      <TouchableWithoutFeedback
-        onPress={() => {
-          Keyboard.dismiss();
-        }}
+      <ScrollView
+        automaticallyAdjustKeyboardInsets
+        contentContainerStyle={styles.contentContainer}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
+        onScrollBeginDrag={Keyboard.dismiss}
+        showsVerticalScrollIndicator={false}
+        style={styles.container}
       >
-        <View style={styles.container}>
-          {/* {data.map(renderItem)} */}
-          {Object.values(groupedData).map((items, groupIndex) => {
-            const isRow = items.length > 1;
+        {Object.values(groupedData).map((items, groupIndex) => {
+          const isRow = items.length > 1;
 
-            return (
-              <View key={groupIndex} style={isRow ? styles.row : undefined}>
-                {items.map(({ item, index }) => (
-                  <View
-                    key={item.key}
-                    style={
-                      isRow
-                        ? [styles.column, { flex: item.flex ?? 1 }]
-                        : [styles.item]
-                    }
-                  >
-                    {renderItem(item, index)}
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-        </View>
-      </TouchableWithoutFeedback>
+          return (
+            <View key={groupIndex} style={isRow ? styles.row : undefined}>
+              {items.map(({ item, index }) => (
+                <View
+                  key={item.key}
+                  style={
+                    isRow
+                      ? [styles.column, { flex: item.flex ?? 1 }]
+                      : styles.item
+                  }
+                >
+                  {renderItem(item, index)}
+                </View>
+              ))}
+            </View>
+          );
+        })}
+      </ScrollView>
     );
   },
 );
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  contentContainer: {
+    flexGrow: 1,
     padding: 20,
+    paddingBottom: 40,
   },
   item: {
     marginBottom: 16,

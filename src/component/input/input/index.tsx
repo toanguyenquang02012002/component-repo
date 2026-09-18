@@ -24,6 +24,7 @@ export const Input = ({
   autoCapitalize = 'none',
   maxLength,
   showUnit,
+  unit,
   placeholder,
   rightColor,
   isHighlightCopy,
@@ -86,7 +87,7 @@ export const Input = ({
           value={valueInput}
         />
 
-        {showUnit ? <Text style={styles.unitText}>%</Text> : null}
+        {showUnit ? <Text style={styles.unitText}>{unit ?? '%'}</Text> : null}
 
         {rightView ? (
           <TouchableOpacity

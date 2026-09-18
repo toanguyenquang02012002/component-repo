@@ -6,7 +6,7 @@ export interface FormRef {
 
 export interface FormProps {
   data: Array<FormItemsProps>;
-  onChangeText?: (value: string, index: number, key: string) => void;
+  onChangeText?: (value: string | number, index: number, key: string) => void;
   onChangeDate?: (
     value: Date | string | undefined,
     index: number,
@@ -88,6 +88,11 @@ export interface FormItemsProps {
   key: string;
   type:
     | 'INPUT'
+    | 'TEXTAREA'
+    | 'CURRENCY'
+    | 'PHONE'
+    | 'EMAIL'
+    | 'PASSWORD'
     | 'SELECT'
     | 'PORTRAIT'
     | 'DATE'
