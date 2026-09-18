@@ -1,20 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
-import {
-  Keyboard,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { InputForm } from '../../input/inputForm';
-import { CurrencyForm } from '../../input/currencyForm';
-import { SelectForm } from '../../select/selectForm';
+import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
 import { FormItemsProps, FormProps, FormRef } from './entity';
-import { SelectMultiForm } from '../../select/multiselectForm';
-import { GroupSelectForm } from '../../select/groupSelectForm';
-import { DatePickerForm } from '../../datePicker/datePickerForm';
-import { RadioForm } from '../../radio/radioForm';
-import { MultiRadioForm } from '../../radio/multiRadioForm';
-import { TreeSelectForm } from '../../treeSelect/treeSelectForm';
+import { fieldRegistry } from './fieldRegistry';
 
 export const Form = forwardRef<FormRef, FormProps>(
   (
@@ -45,136 +32,31 @@ export const Form = forwardRef<FormRef, FormProps>(
         return null;
       }
 
-      switch (item.type) {
-        case 'SELECT':
-          return (
-            <SelectForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onChangeText={onChangeText}
-              onChangeTextSearch={onChangeTextSearch}
-              onPaging={onPaging}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        case 'INPUT':
-        case 'TEXTAREA':
-        case 'PHONE':
-        case 'EMAIL':
-        case 'PASSWORD':
-          return (
-            <InputForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onChangeText={onChangeText}
-              onChangeTextSearch={onChangeTextSearch}
-              onPaging={onPaging}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-              onFocus={onFocus}
-              onBlur={onBlur}
-            />
-          );
-        case 'CURRENCY':
-          return (
-            <CurrencyForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onChangeText={onChangeText}
-              resetError={() => resetError(index)}
-              onFocus={onFocus}
-              onBlur={onBlur}
-            />
-          );
-        case 'DATE':
-        case 'YEAR':
-        case 'MONTH_YEAR':
-          return (
-            <DatePickerForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onChangeDate={onChangeDate}
-              onChangeText={onChangeText}
-              onChangeTextSearch={onChangeTextSearch}
-              onPaging={onPaging}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        case 'MULTI_SELECT':
-          return (
-            <SelectMultiForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onChangeText={onChangeText}
-              onChangeTextSearch={onChangeTextSearch}
-              onPaging={onPaging}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        case 'GROUP_SELECT':
-          return (
-            <GroupSelectForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onChangeText={onChangeText}
-              onChangeTextSearch={onChangeTextSearch}
-              onPaging={onPaging}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        case 'RADIO':
-        case 'GROUPRADIO':
-          return (
-            <RadioForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        case 'MULTI_RADIO':
-          return (
-            <MultiRadioForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        case 'TREE_SELECT':
-          return (
-            <TreeSelectForm
-              key={item.key}
-              data={data}
-              index={index}
-              item={item}
-              onSelected={onSelected}
-              resetError={() => resetError(index)}
-            />
-          );
-        default:
-          return null;
+      const FieldComponent = fieldRegistry[item.type];
+
+      if (!FieldComponent) {
+        if (__DEV__) {
+          console.warn(`Chưa đăng ký component cho field type: ${item.type}`);
+        }
+
+        return null;
       }
+
+      return (
+        <FieldComponent
+          data={data}
+          index={index}
+          item={item}
+          onChangeDate={onChangeDate}
+          onChangeText={onChangeText}
+          onChangeTextSearch={onChangeTextSearch}
+          onPaging={onPaging}
+          onSelected={onSelected}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          resetError={() => resetError(index)}
+        />
+      );
     };
 
     const groupedData = data.reduce<
