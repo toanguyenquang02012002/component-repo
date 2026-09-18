@@ -25,9 +25,6 @@ function BottomSheetFlatListInner<T>(
     return native;
   }, [contentPanGesture]);
 
-  console.log('====================================');
-  console.log(isScroll);
-  console.log('====================================');
   return (
     <GestureDetector gesture={nativeScrollGesture}>
       <FlatList
