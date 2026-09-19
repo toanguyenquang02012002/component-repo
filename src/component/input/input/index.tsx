@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { TextFieldProps } from './entity';
+import { FloatingField } from '../../common';
 
 export const Input = ({
   containerStyle,
@@ -37,79 +38,100 @@ export const Input = ({
 }: TextFieldProps) => {
   const [valueInput, setValueInput] = useState(value?.toString() ?? '');
   const [height, setHeight] = useState(0);
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => {
     setValueInput(value?.toString() ?? '');
   }, [value]);
 
+  const backgroundColor =
+    showbgcl && !editable
+      ? '#F1F5F9'
+      : showbgcl && isHighlightCopy && editable
+      ? '#FFF7D6'
+      : '#FFFFFF';
+
   return (
     <>
-      <View
+      <FloatingField
+        backgroundColor={backgroundColor}
+        disabled={!editable}
+        error={error}
+        focused={focused}
+        label={label}
         style={[
           styles.container,
-          showBorder ? styles.containerBorder : styles.containerNoBorder,
-          showbgcl && !editable && styles.containerDisabled,
-          showbgcl && isHighlightCopy && editable && styles.containerHighlight,
-          error && styles.containerError,
+          !showBorder && styles.containerNoBorder,
           containerStyle,
         ]}
+        value={valueInput}
       >
-        <TextInput
-          {...textInputProps}
-          autoCapitalize={autoCapitalize}
-          editable={editable}
-          keyboardType={keyboardType}
-          maxLength={maxLength}
-          multiline={multiline}
-          onBlur={onBlur}
-          onChangeText={txt => {
-            setValueInput(txt);
-            onChangeText?.(txt);
-          }}
-          onContentSizeChange={event => {
-            setHeight(event.nativeEvent.contentSize.height);
-          }}
-          onFocus={onFocus}
-          placeholder={
-            placeholder ?? (editable ? `Nhập ${label.toLowerCase()}` : '')
-          }
-          placeholderTextColor="rgba(0, 0, 0, 0.4)"
-          style={[
-            styles.textInput,
-            !editable && styles.textInputDisabled,
-            multiline && {
-              height: Math.max(52 + 52 * (xheight ?? 1), height),
-              maxHeight: 208,
-              textAlignVertical: 'top',
-            },
-            style,
-          ]}
-          value={valueInput}
-        />
+        <View style={styles.inputRow}>
+          <TextInput
+            {...textInputProps}
+            autoCapitalize={autoCapitalize}
+            editable={editable}
+            keyboardType={keyboardType}
+            maxLength={maxLength}
+            multiline={multiline}
+            onBlur={event => {
+              setFocused(false);
+              onBlur?.(event);
+            }}
+            onChangeText={txt => {
+              setValueInput(txt);
+              onChangeText?.(txt);
+            }}
+            onContentSizeChange={event => {
+              setHeight(event.nativeEvent.contentSize.height);
+            }}
+            onFocus={event => {
+              setFocused(true);
+              onFocus?.(event);
+            }}
+            placeholder={
+              focused
+                ? placeholder ?? (editable ? `Nhập ${label.toLowerCase()}` : '')
+                : undefined
+            }
+            placeholderTextColor="rgba(0, 0, 0, 0.4)"
+            style={[
+              styles.textInput,
+              !editable && styles.textInputDisabled,
+              multiline && {
+                height: Math.max(52 + 52 * (xheight ?? 1), height),
+                maxHeight: 208,
+                textAlignVertical: 'top',
+              },
+              style,
+            ]}
+            value={valueInput}
+          />
 
-        {showUnit ? <Text style={styles.unitText}>{unit ?? '%'}</Text> : null}
+          {showUnit ? <Text style={styles.unitText}>{unit ?? '%'}</Text> : null}
 
-        {rightView ? (
-          <TouchableOpacity
-            activeOpacity={0.75}
-            onPress={onPressRight}
-            style={styles.rightView}
-          >
-            {typeof rightView === 'string' ? (
-              <Text
-                style={[
-                  styles.rightText,
-                  rightColor ? { color: rightColor } : null,
-                ]}
-              >
-                {rightView}
-              </Text>
-            ) : (
-              rightIcon ?? <Text style={styles.rightText}>›</Text>
-            )}
-          </TouchableOpacity>
-        ) : null}
-      </View>
+          {rightView ? (
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={onPressRight}
+              style={styles.rightView}
+            >
+              {typeof rightView === 'string' ? (
+                <Text
+                  style={[
+                    styles.rightText,
+                    rightColor ? { color: rightColor } : null,
+                  ]}
+                >
+                  {rightView}
+                </Text>
+              ) : (
+                rightIcon ?? <Text style={styles.rightText}>›</Text>
+              )}
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </FloatingField>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </>
   );
@@ -117,35 +139,24 @@ export const Input = ({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(0, 53, 128, 0.2)',
-    borderRadius: 8,
-    flexDirection: 'row',
-    minHeight: 52,
+    width: '100%',
   },
-  containerBorder: {
-    borderWidth: 1,
+  inputRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    minHeight: 54,
   },
   containerNoBorder: {
     borderWidth: 0,
   },
-  containerDisabled: {
-    backgroundColor: 'rgba(0, 53, 128, 0.04)',
-  },
-  containerHighlight: {
-    backgroundColor: '#fff3d1',
-  },
-  containerError: {
-    borderColor: 'red',
-  },
   textInput: {
-    color: 'rgba(0, 0, 0, 0.8)',
+    color: '#0F172A',
     flex: 1,
-    fontSize: 14,
-    minHeight: 52,
-    paddingHorizontal: 10,
-    paddingVertical: 15,
+    fontSize: 15,
+    minHeight: 54,
+    paddingHorizontal: 14,
+    paddingBottom: 8,
+    paddingTop: 15,
   },
   textInputDisabled: {
     color: 'rgba(0, 0, 0, 0.25)',

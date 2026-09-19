@@ -128,6 +128,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
         if (finished && animationIdRef.current === animationId) {
           visibleRef.current = false;
           setVisible(false);
+          Keyboard.dismiss();
           onClose?.();
         }
       });
@@ -210,7 +211,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           0,
           event.endCoordinates.height - keyboardVerticalOffset,
         );
-        animateKeyboardOffset(nextOffset, event);
+        // animateKeyboardOffset(nextOffset, event);
       });
       const hideSubscription = Keyboard.addListener(hideEvent, event => {
         animateKeyboardOffset(0, event);

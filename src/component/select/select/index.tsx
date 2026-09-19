@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -14,6 +20,7 @@ import {
   BottomSheetFlatList,
   BottomSheetRef,
 } from '../../bottomsheet';
+import { FloatingField } from '../../common';
 
 const DEFAULT_SHEET_HEIGHT = 520;
 
@@ -74,7 +81,13 @@ export const Select = ({
     return mappedData.filter(item =>
       item.name.toLowerCase().includes(normalizedSearch),
     );
-  }, [data, filterOption, itemSelected?.value, searchValue, valueSelected?.value]);
+  }, [
+    data,
+    filterOption,
+    itemSelected?.value,
+    searchValue,
+    valueSelected?.value,
+  ]);
 
   const placeholder = `Chọn ${label?.toLowerCase() || ''}`;
   const displayValue = valueSelected?.name
@@ -192,7 +205,52 @@ export const Select = ({
 
   return (
     <View style={[styles.container, selectStyle]}>
-      <TouchableOpacity
+      <FloatingField
+        disabled={disabled}
+        error={error}
+        focused={!!itemSelected}
+        label={label}
+        value={itemSelected}
+      >
+        <TouchableOpacity
+          disabled={disabled}
+          onPress={openSheet}
+          style={[
+            styles.selectButton,
+            containerStyle,
+            disabled && styles.selectButtonDisabled,
+            isHighlightCopy && !disabled && styles.selectButtonHighlight,
+            error && styles.selectButtonError,
+          ]}
+        >
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.selectText,
+              !valueSelected?.name && styles.placeholderText,
+              disabled && styles.disabledText,
+              textStyle,
+            ]}
+          >
+            {valueSelected?.name && valueSelected?.name}
+          </Text>
+          {valueSelected?.name && !disabled ? (
+            <TouchableOpacity
+              activeOpacity={0.72}
+              hitSlop={{ bottom: 10, left: 10, right: 10, top: 10 }}
+              onPress={clearSelected}
+              style={styles.clearButton}
+            >
+              <Text style={styles.clearIcon}>×</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={[styles.chevron, disabled && styles.disabledText]}>
+              ▾
+            </Text>
+          )}
+        </TouchableOpacity>
+      </FloatingField>
+      {/* <TouchableOpacity
         activeOpacity={0.82}
         disabled={disabled}
         onPress={openSheet}
@@ -229,7 +287,7 @@ export const Select = ({
             ▾
           </Text>
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -278,9 +336,9 @@ const styles = StyleSheet.create({
   selectButton: {
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderColor: 'rgba(0, 53, 128, 0.2)',
+    // borderColor: 'rgba(0, 53, 128, 0.2)',
     borderRadius: 8,
-    borderWidth: 1,
+    // borderWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     minHeight: 52,
