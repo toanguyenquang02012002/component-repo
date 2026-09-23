@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  FlatList,
   Keyboard,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,69 +9,21 @@ import {
 } from 'react-native';
 import {
   BottomSheet,
-  BottomSheetFlatList,
+  BottomSheetScrollView,
   BottomSheetRef,
 } from '../../bottomsheet';
 import {
   ItemSelectProduct,
   SelectGroupConfig,
   SelectGroupValues,
-  SelectGroupValue,
 } from '../../form/form/entity';
-
-interface GroupSelectProps {
-  label: string;
-  groups?: SelectGroupConfig[];
-  value?: SelectGroupValues;
-  error?: string;
-  disabled?: boolean;
-  isHighlightCopy?: boolean;
-  onSubmit?: (value: SelectGroupValues) => void;
-}
-
-const getInitialValues = (
-  groups: SelectGroupConfig[] = [],
-  value?: SelectGroupValues,
-): SelectGroupValues => {
-  return groups.reduce<SelectGroupValues>((result, group) => {
-    const currentValue = value?.[group.key] ?? group.value;
-    const selectedFromData = group.data.filter(item => item.isSelected);
-
-    result[group.key] =
-      currentValue ??
-      (group.mode === 'multi' ? selectedFromData : selectedFromData[0]);
-
-    return result;
-  }, {});
-};
-
-const getValueLabel = (value: SelectGroupValue) => {
-  if (Array.isArray(value)) {
-    return value.map(item => item.name).join(', ');
-  }
-
-  return value?.name ?? '';
-};
-
-const isSelected = (
-  group: SelectGroupConfig,
-  item: ItemSelectProduct,
-  value: SelectGroupValue,
-) => {
-  if (group.mode === 'multi') {
-    return Array.isArray(value) && value.some(i => i.value === item.value);
-  }
-
-  return !Array.isArray(value) && value?.value === item.value;
-};
-
-const getSelectedCount = (value: SelectGroupValue) => {
-  if (Array.isArray(value)) {
-    return value.length;
-  }
-
-  return value ? 1 : 0;
-};
+import {
+  getInitialValues,
+  getSelectedCount,
+  getValueLabel,
+  isSelected,
+} from './common';
+import type { GroupSelectProps } from './interface';
 
 export const GroupSelect = ({
   label,
@@ -83,7 +35,8 @@ export const GroupSelect = ({
   onSubmit,
 }: GroupSelectProps) => {
   const refbottomSheet = useRef<BottomSheetRef>(null);
-  const listRef = useRef<FlatList<SelectGroupConfig>>(null);
+  const listRef = useRef<ScrollView>(null);
+  const groupOffsetsRef = useRef<Record<string, number>>({});
   const [values, setValues] = useState<SelectGroupValues>(() =>
     getInitialValues(groups, value),
   );
@@ -189,11 +142,11 @@ export const GroupSelect = ({
     setGroupErrors(nextErrors);
 
     if (firstInvalidIndex >= 0) {
+      const invalidGroup = groups[firstInvalidIndex];
       requestAnimationFrame(() => {
-        listRef.current?.scrollToIndex({
+        listRef.current?.scrollTo({
           animated: true,
-          index: firstInvalidIndex,
-          viewPosition: 0,
+          y: groupOffsetsRef.current[invalidGroup.key] ?? 0,
         });
       });
       return false;
@@ -289,20 +242,22 @@ export const GroupSelect = ({
             >{`Chọn ${label.toLowerCase()}`}</Text>
           </View>
 
-          <BottomSheetFlatList
+          <BottomSheetScrollView
             ref={listRef}
-            data={groups}
-            keyExtractor={item => item.key}
+            style={styles.groupList}
+            nestedScrollEnabled
             keyboardShouldPersistTaps="handled"
-            onScrollToIndexFailed={info => {
-              listRef.current?.scrollToOffset({
-                animated: true,
-                offset: Math.max(0, info.averageItemLength * info.index),
-              });
-            }}
             contentContainerStyle={styles.sheetContent}
-            renderItem={({ item: group }) => (
-              <View style={styles.groupBlock}>
+          >
+            {groups.map(group => (
+              <View
+                key={group.key}
+                onLayout={event => {
+                  groupOffsetsRef.current[group.key] =
+                    event.nativeEvent.layout.y;
+                }}
+                style={styles.groupBlock}
+              >
                 <Text style={styles.groupTitle}>
                   {group.label}
                   {group.mode === 'multi' && group.maxSelected
@@ -351,8 +306,8 @@ export const GroupSelect = ({
                   );
                 })}
               </View>
-            )}
-          />
+            ))}
+          </BottomSheetScrollView>
 
           <View style={styles.footerAbsolute}>
             <TouchableOpacity
@@ -431,6 +386,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   sheetWrapper: {
+    flex: 1,
+  },
+  groupList: {
     flex: 1,
   },
   sheetTitle: {

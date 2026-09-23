@@ -1,19 +1,23 @@
-import React, { useContext, useMemo } from 'react';
-import { ScrollView, StyleProp, ViewStyle } from 'react-native';
+import React, { forwardRef, useContext, useMemo } from 'react';
+import {
+  ScrollView,
+  ScrollViewProps,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { BottomSheetContext } from '../bottomsheet';
 
-export interface BottomSheetScrollViewProps {
+export interface BottomSheetScrollViewProps
+  extends Omit<ScrollViewProps, 'style'> {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
-  contentContainerStyle?: StyleProp<ViewStyle>;
 }
 
-export function BottomSheetScrollView({
-  children,
-  style,
-  contentContainerStyle,
-}: BottomSheetScrollViewProps): React.ReactElement {
+export const BottomSheetScrollView = forwardRef<
+  ScrollView,
+  BottomSheetScrollViewProps
+>(({ children, style, contentContainerStyle, onScroll, ...rest }, ref) => {
   const { notifyAtTop, contentPanGesture } = useContext(BottomSheetContext);
 
   const nativeScrollGesture = useMemo(() => {
@@ -28,16 +32,19 @@ export function BottomSheetScrollView({
   return (
     <GestureDetector gesture={nativeScrollGesture}>
       <ScrollView
+        ref={ref}
         style={style}
         contentContainerStyle={contentContainerStyle}
         scrollEventThrottle={16}
         onScroll={event => {
           notifyAtTop(event.nativeEvent.contentOffset.y <= 0);
+          onScroll?.(event);
         }}
         showsVerticalScrollIndicator={false}
+        {...rest}
       >
         {children}
       </ScrollView>
     </GestureDetector>
   );
-}
+});
