@@ -10,6 +10,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeScreen } from './src/view/home';
+import Config from 'react-native-config';
+
+console.log(Config.ENV);
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';

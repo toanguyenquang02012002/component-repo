@@ -19,7 +19,8 @@ export function BottomSheetScrollView({
   const nativeScrollGesture = useMemo(() => {
     const native = Gesture.Native();
     if (contentPanGesture) {
-      native.simultaneousWithExternalGesture(contentPanGesture);
+      // native.simultaneousWithExternalGesture(contentPanGesture);
+      native.requireExternalGestureToFail(contentPanGesture);
     }
     return native;
   }, [contentPanGesture]);

@@ -42,6 +42,7 @@ function BottomSheetFlatListInner<T>(
         }}
         showsVerticalScrollIndicator={false}
         {...rest}
+        // renderItem={() => <></>}
       />
     </GestureDetector>
   );
