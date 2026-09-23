@@ -18,16 +18,17 @@ export const BottomSheetScrollView = forwardRef<
   ScrollView,
   BottomSheetScrollViewProps
 >(({ children, style, contentContainerStyle, onScroll, ...rest }, ref) => {
-  const { notifyAtTop, contentPanGesture } = useContext(BottomSheetContext);
+  const { notifyAtTop, contentPanGesture, isScroll } =
+    useContext(BottomSheetContext);
 
   const nativeScrollGesture = useMemo(() => {
     const native = Gesture.Native();
-    if (contentPanGesture) {
+    if (contentPanGesture && isScroll) {
       // native.simultaneousWithExternalGesture(contentPanGesture);
       native.requireExternalGestureToFail(contentPanGesture);
     }
     return native;
-  }, [contentPanGesture]);
+  }, [contentPanGesture, isScroll]);
 
   return (
     <GestureDetector gesture={nativeScrollGesture}>

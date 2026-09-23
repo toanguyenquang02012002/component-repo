@@ -18,12 +18,12 @@ function BottomSheetFlatListInner<T>(
 
   const nativeScrollGesture = useMemo(() => {
     const native = Gesture.Native();
-    if (contentPanGesture) {
+    if (contentPanGesture && isScroll) {
       // native.simultaneousWithExternalGesture(contentPanGesture);
       native.requireExternalGestureToFail(contentPanGesture);
     }
     return native;
-  }, [contentPanGesture]);
+  }, [contentPanGesture, isScroll]);
 
   return (
     <GestureDetector gesture={nativeScrollGesture}>
