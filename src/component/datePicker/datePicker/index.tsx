@@ -17,10 +17,22 @@ import {
   ViewStyle,
 } from 'react-native';
 import { BottomSheet, BottomSheetRef } from '../../bottomsheet';
+import {
+  clampDate,
+  DatePickerType,
+  formatDateValue,
+  formatDisplayValue,
+  getDayList,
+  getDayValue,
+  getMonthYearValue,
+  getYearList,
+  MONTHS,
+  parseDate,
+} from './common';
+
+export type { DatePickerType } from './common';
 
 const { Picker } = require('react-native-wheel-pick');
-
-export type DatePickerType = 'day' | 'year' | 'month_year';
 
 export interface DatePickerComponentProps {
   label: string;
@@ -37,153 +49,6 @@ export interface DatePickerComponentProps {
   snapHeight?: number;
   keyboardVerticalOffset?: number;
 }
-
-const MONTHS = [
-  { label: 'Tháng 1', value: '01' },
-  { label: 'Tháng 2', value: '02' },
-  { label: 'Tháng 3', value: '03' },
-  { label: 'Tháng 4', value: '04' },
-  { label: 'Tháng 5', value: '05' },
-  { label: 'Tháng 6', value: '06' },
-  { label: 'Tháng 7', value: '07' },
-  { label: 'Tháng 8', value: '08' },
-  { label: 'Tháng 9', value: '09' },
-  { label: 'Tháng 10', value: '10' },
-  { label: 'Tháng 11', value: '11' },
-  { label: 'Tháng 12', value: '12' },
-];
-
-const parseDate = (value?: Date | number | string) => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (value instanceof Date) {
-    return value;
-  }
-
-  if (typeof value === 'number') {
-    return new Date(value, 0, 1);
-  }
-
-  const date = moment(
-    value,
-    ['YYYY-MM-DDTHH:mm:ss', 'YYYY-MM-DD', 'DD/MM/YYYY', 'MM, YYYY', 'YYYY'],
-    true,
-  );
-
-  if (date.isValid()) {
-    return date.toDate();
-  }
-
-  const fallback = moment(value);
-  return fallback.isValid() ? fallback.toDate() : undefined;
-};
-
-const getYearList = (centerYear: number, range = 50) => {
-  const years: string[] = [];
-  for (let year = centerYear - range; year <= centerYear + range; year += 1) {
-    years.push(year.toString());
-  }
-  return years;
-};
-
-const getDayList = (month: string, year: string) => {
-  const daysInMonth = moment(`${year}-${month}`, 'YYYY-MM').daysInMonth();
-
-  return Array.from({ length: daysInMonth }, (_, index) => {
-    const value = (index + 1).toString().padStart(2, '0');
-    return { label: value, value };
-  });
-};
-
-const getDayValue = (value?: Date | string) => {
-  const date = parseDate(value) ?? new Date();
-  return {
-    day: moment(date).format('DD'),
-    month: moment(date).format('MM'),
-    year: moment(date).format('YYYY'),
-  };
-};
-
-const clampDate = (date: Date, minDate?: Date, maxDate?: Date) => {
-  if (minDate && moment(date).isBefore(minDate, 'day')) {
-    return minDate;
-  }
-
-  if (maxDate && moment(date).isAfter(maxDate, 'day')) {
-    return maxDate;
-  }
-
-  return date;
-};
-
-const getMonthYearValue = (value?: Date | string) => {
-  if (typeof value === 'string' && value.includes(',')) {
-    const [month, year] = value.split(',').map(item => item.trim());
-    return {
-      month: month.padStart(2, '0'),
-      year,
-    };
-  }
-
-  const date = parseDate(value) ?? new Date();
-  return {
-    month: moment(date).format('MM'),
-    year: moment(date).format('YYYY'),
-  };
-};
-
-const formatDateValue = (
-  date: Date,
-  type: DatePickerType,
-  mode: 'date' | 'time' | 'datetime',
-) => {
-  if (type === 'year') {
-    return moment(date).format('YYYY');
-  }
-
-  if (type === 'month_year') {
-    return moment(date).format('MM, YYYY');
-  }
-
-  return moment(date).format(
-    mode === 'datetime' ? 'YYYY-MM-DDTHH:mm:ss' : 'YYYY-MM-DD',
-  );
-};
-
-const formatDisplayValue = (
-  value: Date | string | undefined,
-  type: DatePickerType,
-  mode: 'date' | 'time' | 'datetime',
-) => {
-  if (!value) {
-    return '';
-  }
-
-  if (type === 'year') {
-    return value.toString();
-  }
-
-  if (type === 'month_year') {
-    const monthYear = getMonthYearValue(value);
-    const monthLabel = MONTHS.find(
-      item => item.value === monthYear.month,
-    )?.label;
-    return `${monthLabel ?? `Tháng ${Number(monthYear.month)}`}, ${
-      monthYear.year
-    }`;
-  }
-
-  const date = parseDate(value);
-  if (!date) {
-    return '';
-  }
-
-  return moment(date).format(
-    mode === 'datetime' ? 'DD/MM/YYYY HH:mm' : 'DD/MM/YYYY',
-  );
-};
 
 export const DatePickerComponent = ({
   label,
@@ -213,6 +78,9 @@ export const DatePickerComponent = ({
   const [tmpMonth, setTmpMonth] = useState(monthYearValue.month);
   const [tmpYear, setTmpYear] = useState(monthYearValue.year);
   const [isChange, setIsChange] = useState(false);
+  const yearCenter = useRef(
+    Number(tmpYear) || new Date().getFullYear(),
+  ).current;
 
   const placeholder = `Chọn ${label.toLowerCase()}`;
   const displayValue = formatDisplayValue(valueDate, type, mode);
@@ -246,8 +114,8 @@ export const DatePickerComponent = ({
     }
   }, [dayList, tmpDay]);
   const yearList = useMemo(
-    () => getYearList(Number(tmpYear) || new Date().getFullYear()),
-    [],
+    () => getYearList(yearCenter),
+    [yearCenter],
   );
 
   const openSheet = useCallback(() => {
@@ -379,8 +247,11 @@ export const DatePickerComponent = ({
                 pickerData={dayList}
                 selectedValue={tmpDay}
                 selectTextColor="#111827"
-                textColor="#6B7280"
-                textSize={16}
+                // textColor="#6B7280"
+                // textSize={16}
+                itemStyle={styles.wheelPickerItem}
+                themeVariant="light"
+                textColor="#111827"
                 style={[styles.wheelPicker, { width: dayColumnWidth }]}
                 onValueChange={(nextValue: string) => {
                   setIsChange(true);
@@ -392,8 +263,11 @@ export const DatePickerComponent = ({
                 pickerData={MONTHS}
                 selectedValue={tmpMonth}
                 selectTextColor="#111827"
-                textColor="#6B7280"
-                textSize={16}
+                // textColor="#6B7280"
+                // textSize={16}
+                itemStyle={styles.wheelPickerItem}
+                themeVariant="light"
+                textColor="#111827"
                 style={[styles.wheelPicker, { width: monthColumnWidth }]}
                 onValueChange={(nextValue: string) => {
                   setIsChange(true);
@@ -404,8 +278,11 @@ export const DatePickerComponent = ({
                 pickerData={yearList}
                 selectedValue={tmpYear}
                 selectTextColor="#111827"
-                textColor="#6B7280"
-                textSize={16}
+                // textColor="#6B7280"
+                // textSize={16}
+                itemStyle={styles.wheelPickerItem}
+                themeVariant="light"
+                textColor="#111827"
                 style={[styles.wheelPicker, { width: yearColumnWidth }]}
                 onValueChange={(nextValue: string) => {
                   setIsChange(true);
@@ -417,8 +294,9 @@ export const DatePickerComponent = ({
             <Picker
               pickerData={yearList}
               selectedValue={valueTmp.toString()}
-              selectTextColor="#111827"
-              textColor="#6B7280"
+              itemStyle={styles.wheelPickerItem}
+              themeVariant="light"
+              textColor="#111827"
               textSize={16}
               style={[styles.wheelPicker, { width: pickerWidth }]}
               onValueChange={(nextValue: string) => {
@@ -431,8 +309,9 @@ export const DatePickerComponent = ({
                 itemHeight={32}
                 pickerData={MONTHS}
                 selectedValue={tmpMonth}
-                selectTextColor="#111827"
-                textColor="#6B7280"
+                itemStyle={styles.wheelPickerItem}
+                themeVariant="light"
+                textColor="#111827"
                 textSize={16}
                 style={[styles.wheelPicker, { width: pickerWidth / 2 }]}
                 onValueChange={(nextValue: string) => {
@@ -442,8 +321,9 @@ export const DatePickerComponent = ({
               <Picker
                 pickerData={yearList}
                 selectedValue={tmpYear}
-                selectTextColor="#111827"
-                textColor="#6B7280"
+                itemStyle={styles.wheelPickerItem}
+                themeVariant="light"
+                textColor="#111827"
                 textSize={16}
                 style={[styles.wheelPicker, { width: pickerWidth / 2 }]}
                 onValueChange={(nextValue: string) => {
@@ -557,5 +437,9 @@ const styles = StyleSheet.create({
   wheelPicker: {
     backgroundColor: '#FFFFFF',
     height: 240,
+  },
+  wheelPickerItem: {
+    color: '#111827',
+    fontSize: 16,
   },
 });
