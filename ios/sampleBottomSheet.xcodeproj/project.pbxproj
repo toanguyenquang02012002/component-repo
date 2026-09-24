@@ -28,6 +28,7 @@
 		8F6889847E9778DD829F0D10 /* Pods-sampleBottomSheet.debugprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-sampleBottomSheet.debugprod.xcconfig"; path = "Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet.debugprod.xcconfig"; sourceTree = "<group>"; };
 		A5F4D93EB491E9851AAA69D1 /* Pods-sampleBottomSheet.releaseuat.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-sampleBottomSheet.releaseuat.xcconfig"; path = "Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet.releaseuat.xcconfig"; sourceTree = "<group>"; };
 		DE196311306377330018CDD7 /* sampleBottomSheet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = sampleBottomSheet.entitlements; path = sampleBottomSheet/sampleBottomSheet.entitlements; sourceTree = "<group>"; };
+		DE9308903063A8EC00682D7A /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F1BCF5172D6A800F6080F327 /* Pods-sampleBottomSheet.releaseprod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-sampleBottomSheet.releaseprod.xcconfig"; path = "Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet.releaseprod.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -81,6 +82,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				DE9308903063A8EC00682D7A /* Config.xcconfig */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -119,6 +121,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				DE9308923063AA0800682D7A /* ENVCONFIG */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
 				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
@@ -201,13 +204,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -236,6 +235,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		DE9308923063AA0800682D7A /* ENVCONFIG */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = ENVCONFIG;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \\\n\"${SRCROOT}/..\" \\\n\"${SRCROOT}/tmp.xcconfig\"\n";
+		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -244,13 +261,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-sampleBottomSheet/Pods-sampleBottomSheet-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -275,7 +288,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-sampleBottomSheet.debug.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "DEV SAMPLE";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sampleBottomSheet/sampleBottomSheet.entitlements;
@@ -308,7 +320,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-sampleBottomSheet.release.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "DEV SAMPLE";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sampleBottomSheet/sampleBottomSheet.entitlements;
@@ -337,6 +348,7 @@
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE9308903063A8EC00682D7A /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -420,6 +432,7 @@
 		};
 		83CBBA211A601CBA00E9B192 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE9308903063A8EC00682D7A /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -495,6 +508,7 @@
 		};
 		DE196312306377950018CDD7 /* DebugUAT */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE9308903063A8EC00682D7A /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -580,7 +594,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 59990B12DFBF1222914011B5 /* Pods-sampleBottomSheet.debuguat.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "UAT SAMPLE";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sampleBottomSheet/sampleBottomSheet.entitlements;
@@ -611,6 +624,7 @@
 		};
 		DE1963143063779B0018CDD7 /* ReleaseUAT */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE9308903063A8EC00682D7A /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -688,7 +702,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A5F4D93EB491E9851AAA69D1 /* Pods-sampleBottomSheet.releaseuat.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "UAT SAMPLE";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sampleBottomSheet/sampleBottomSheet.entitlements;
@@ -717,6 +730,7 @@
 		};
 		DE196316306377A70018CDD7 /* DebugProd */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE9308903063A8EC00682D7A /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -802,7 +816,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 8F6889847E9778DD829F0D10 /* Pods-sampleBottomSheet.debugprod.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "GOLIVE SAMPLE";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sampleBottomSheet/sampleBottomSheet.entitlements;
@@ -833,6 +846,7 @@
 		};
 		DE196318306377B00018CDD7 /* ReleaseProd */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE9308903063A8EC00682D7A /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -910,7 +924,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F1BCF5172D6A800F6080F327 /* Pods-sampleBottomSheet.releaseprod.xcconfig */;
 			buildSettings = {
-				APP_DISPLAY_NAME = "GOLIVE SAMPLE";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = sampleBottomSheet/sampleBottomSheet.entitlements;
