@@ -1,7 +1,7 @@
 import React, { forwardRef, useContext, useMemo, useRef } from 'react';
 import { FlatList, FlatListProps, StyleProp, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { BottomSheetContext } from '../bottomsheet';
+import { BottomSheetContext } from '../bottomsheet/interface';
 
 export interface BottomSheetFlatListProps<T>
   extends Omit<FlatListProps<T>, 'style'> {

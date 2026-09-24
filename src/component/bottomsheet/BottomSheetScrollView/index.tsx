@@ -6,7 +6,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { BottomSheetContext } from '../bottomsheet';
+import { BottomSheetContext } from '../bottomsheet/interface';
 
 export interface BottomSheetScrollViewProps
   extends Omit<ScrollViewProps, 'style'> {
@@ -24,7 +24,6 @@ export const BottomSheetScrollView = forwardRef<
   const nativeScrollGesture = useMemo(() => {
     const native = Gesture.Native();
     if (contentPanGesture && isScroll) {
-      // native.simultaneousWithExternalGesture(contentPanGesture);
       native.requireExternalGestureToFail(contentPanGesture);
     }
     return native;

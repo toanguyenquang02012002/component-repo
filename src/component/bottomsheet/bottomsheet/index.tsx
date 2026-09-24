@@ -1,5 +1,4 @@
 import React, {
-  createContext,
   forwardRef,
   useCallback,
   useEffect,
@@ -15,54 +14,24 @@ import {
   Keyboard,
   KeyboardEvent,
   Platform,
-  StyleProp,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
-  ViewStyle,
 } from 'react-native';
-import {
-  Gesture,
-  GestureDetector,
-  GestureType,
-} from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Portal } from 'react-native-paper';
+import {
+  BottomSheetContext,
+  BottomSheetProps,
+  BottomSheetRef,
+} from './interface';
+
+export type { BottomSheetProps, BottomSheetRef } from './interface';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const CLOSE_THRESHOLD = 100;
 const VELOCITY_THRESHOLD = 800;
-
-interface BottomSheetContextValue {
-  notifyAtTop: (isAtTop: boolean) => void;
-  // notifyDraggingSheet: (isDragging: boolean) => void;
-  contentPanGesture: GestureType | null;
-  // isDraggingSheet: boolean;
-  isScroll: boolean;
-}
-
-export const BottomSheetContext = createContext<BottomSheetContextValue>({
-  notifyAtTop: () => {},
-  // notifyDraggingSheet: () => {},
-  contentPanGesture: null,
-  // isDraggingSheet: false,
-  isScroll: true,
-});
-
-export interface BottomSheetRef {
-  open: () => void;
-  close: () => void;
-}
-
-export interface BottomSheetProps {
-  children: React.ReactNode;
-  onClose?: () => void;
-  snapHeight?: number;
-  backdropOpacity?: number;
-  style?: StyleProp<ViewStyle>;
-  avoidKeyboard?: boolean;
-  keyboardVerticalOffset?: number;
-}
 
 export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
   (
@@ -77,16 +46,21 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     },
     ref,
   ) => {
-    const sheetHeight = snapHeight ?? SCREEN_HEIGHT * 0.6;
+    // const sheetHeight = snapHeight || SCREEN_HEIGHT * 0.8;
+    const sheetHeight = SCREEN_HEIGHT * 0.8;
     const translateY = useRef(new Animated.Value(sheetHeight)).current;
     const backdropAnim = useRef(new Animated.Value(0)).current;
     const keyboardOffset = useRef(new Animated.Value(0)).current;
+    const keyboardOverlap = useRef(new Animated.Value(0)).current;
     const [visible, setVisible] = useState(false);
     const animationIdRef = useRef(0);
     const atTopRef = useRef(true);
     const [atTop, setAtTop] = useState(true);
     const visibleRef = useRef(false);
-
+    const windowHeightBeforeKeyboardRef = useRef(
+      Dimensions.get('window').height,
+    );
+    const animatedSheetHeight = useRef(new Animated.Value(sheetHeight)).current;
     const notifyAtTop = useCallback((isAtTop: boolean) => {
       atTopRef.current = isAtTop;
 
@@ -97,7 +71,15 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       translateY.stopAnimation();
       backdropAnim.stopAnimation();
       keyboardOffset.stopAnimation();
-    }, [backdropAnim, keyboardOffset, translateY]);
+      keyboardOverlap.stopAnimation();
+      animatedSheetHeight.stopAnimation();
+    }, [
+      backdropAnim,
+      keyboardOffset,
+      keyboardOverlap,
+      translateY,
+      animatedSheetHeight,
+    ]);
 
     const close = useCallback(() => {
       if (!visibleRef.current) {
@@ -119,6 +101,11 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           duration: 260,
           useNativeDriver: true,
         }),
+        Animated.timing(keyboardOverlap, {
+          toValue: 0,
+          duration: 260,
+          useNativeDriver: false,
+        }),
         Animated.timing(backdropAnim, {
           toValue: 0,
           duration: 300,
@@ -135,6 +122,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     }, [
       backdropAnim,
       keyboardOffset,
+      keyboardOverlap,
       onClose,
       sheetHeight,
       stopRunningAnimations,
@@ -147,6 +135,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       stopRunningAnimations();
       atTopRef.current = true;
       setAtTop(true);
+      windowHeightBeforeKeyboardRef.current = Dimensions.get('window').height;
+      animatedSheetHeight.setValue(sheetHeight);
 
       if (!visibleRef.current) {
         translateY.setValue(sheetHeight);
@@ -156,6 +146,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       }
 
       keyboardOffset.setValue(0);
+      keyboardOverlap.setValue(0);
 
       requestAnimationFrame(() => {
         if (animationIdRef.current !== animationId) {
@@ -179,10 +170,45 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     }, [
       backdropAnim,
       keyboardOffset,
+      keyboardOverlap,
       sheetHeight,
       stopRunningAnimations,
       translateY,
     ]);
+
+    //push pop bottomSheet
+    const animateKeyboard = useCallback(
+      (
+        offset: number,
+        overlap: number,
+        height: number,
+        event?: KeyboardEvent,
+      ) => {
+        Animated.parallel([
+          Animated.timing(keyboardOffset, {
+            toValue: offset,
+            duration: event?.duration ?? 250,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(keyboardOverlap, {
+            toValue: overlap,
+            duration: event?.duration ?? 250,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: false,
+          }),
+          Animated.timing(animatedSheetHeight, {
+            toValue: height,
+            duration: 700,
+            easing: Easing.inOut(Easing.ease),
+
+            // Height không hỗ trợ native driver
+            useNativeDriver: false,
+          }),
+        ]).start();
+      },
+      [animatedSheetHeight, keyboardOffset, keyboardOverlap],
+    );
 
     useEffect(() => {
       if (!visible || !avoidKeyboard) {
@@ -194,34 +220,39 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
       const hideEvent =
         Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
-      const animateKeyboardOffset = (
-        toValue: number,
-        event?: KeyboardEvent,
-      ) => {
-        Animated.timing(keyboardOffset, {
-          toValue,
-          duration: event?.duration ?? 250,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }).start();
-      };
-
       const showSubscription = Keyboard.addListener(showEvent, event => {
-        const nextOffset = Math.max(
-          0,
-          event.endCoordinates.height - keyboardVerticalOffset,
+        const windowHeight = Dimensions.get('window').height;
+        const keyboardHeight = event.endCoordinates.height;
+
+        const availableHeight =
+          windowHeightBeforeKeyboardRef.current -
+          keyboardHeight -
+          keyboardVerticalOffset;
+
+        const nextSheetHeight = Math.max(
+          200,
+          Math.min(sheetHeight, availableHeight),
         );
-        // animateKeyboardOffset(nextOffset, event);
+        const nextOffset = Platform.OS === 'ios' ? keyboardHeight : 0;
+        animateKeyboard(nextOffset, 0, nextSheetHeight, event);
       });
       const hideSubscription = Keyboard.addListener(hideEvent, event => {
-        animateKeyboardOffset(0, event);
+        animateKeyboard(0, 0, sheetHeight, event);
       });
 
       return () => {
         showSubscription.remove();
         hideSubscription.remove();
       };
-    }, [avoidKeyboard, keyboardOffset, keyboardVerticalOffset, visible]);
+    }, [
+      animateKeyboard,
+      avoidKeyboard,
+      keyboardOffset,
+      keyboardOverlap,
+      keyboardVerticalOffset,
+      sheetHeight,
+      visible,
+    ]);
 
     useImperativeHandle(ref, () => ({ open, close }), [open, close]);
 
@@ -232,17 +263,9 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           .activeOffsetY([-5, 5])
           .onUpdate(event => {
             const { translationY: dragY } = event;
-            // if (!atTopRef.current) {
-            //   translateY.setValue(0);
-            //   return;
-            // }
             translateY.setValue(Math.max(0, dragY));
           })
           .onEnd(event => {
-            // if (!atTopRef.current) {
-            //   translateY.setValue(0);
-            //   return;
-            // }
             const dragY = Math.max(0, event.translationY);
             if (
               dragY > CLOSE_THRESHOLD ||
@@ -268,16 +291,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           .activeOffsetY(8)
           .failOffsetY(-8)
           .onUpdate(event => {
-            const { translationY: dragY, translationX: dragX } = event;
-            // if (!atTopRef.current) {
-            //   translateY.setValue(0);
-            //   return;
-            // }
-
-            // Chỉ cho kéo xuống, không cho kéo lên
-            // if (dragX < 0) {
+            const { translationY: dragY } = event;
             translateY.setValue(Math.max(0, dragY));
-            // }
           })
           .onEnd(event => {
             if (!atTopRef.current) {
@@ -322,46 +337,55 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
               ]}
             />
           </TouchableWithoutFeedback>
-
           <Animated.View
             style={[
-              styles.sheet,
+              styles.sheetContainer,
               {
-                height: sheetHeight,
-                transform: [
-                  {
-                    translateY: Animated.add(
-                      translateY.interpolate({
-                        inputRange: [0, 10000],
-                        outputRange: [0, 10000],
-                        extrapolateLeft: 'clamp',
-                      }),
-                      Animated.multiply(keyboardOffset, -1),
-                    ),
-                  },
-                ],
+                height: animatedSheetHeight,
               },
-              style,
             ]}
           >
-            <GestureDetector gesture={handlePanGesture}>
-              <Animated.View style={styles.handleArea}>
-                <View style={styles.handle} />
-              </Animated.View>
-            </GestureDetector>
-            <GestureDetector gesture={contentPanGesture}>
-              <Animated.View style={styles.content}>
-                <BottomSheetContext.Provider
-                  value={{
-                    notifyAtTop,
-                    contentPanGesture,
-                    isScroll: atTopRef.current,
-                  }}
+            <Animated.View
+              style={[
+                styles.sheet,
+                {
+                  transform: [
+                    {
+                      translateY: Animated.add(
+                        translateY.interpolate({
+                          inputRange: [0, 10000],
+                          outputRange: [0, 10000],
+                          extrapolateLeft: 'clamp',
+                        }),
+                        Animated.multiply(keyboardOffset, -1),
+                      ),
+                    },
+                  ],
+                },
+                style,
+              ]}
+            >
+              <GestureDetector gesture={handlePanGesture}>
+                <Animated.View style={styles.handleArea}>
+                  <View style={styles.handle} />
+                </Animated.View>
+              </GestureDetector>
+              <GestureDetector gesture={contentPanGesture}>
+                <Animated.View
+                  style={[styles.content, { paddingBottom: keyboardOverlap }]}
                 >
-                  {children}
-                </BottomSheetContext.Provider>
-              </Animated.View>
-            </GestureDetector>
+                  <BottomSheetContext.Provider
+                    value={{
+                      notifyAtTop,
+                      contentPanGesture,
+                      isScroll: atTopRef.current,
+                    }}
+                  >
+                    {children}
+                  </BottomSheetContext.Provider>
+                </Animated.View>
+              </GestureDetector>
+            </Animated.View>
           </Animated.View>
         </View>
       </Portal>
@@ -373,18 +397,6 @@ const styles = StyleSheet.create({
   backdrop: {
     backgroundColor: '#000',
   },
-  sheet: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(15,10,26,0.98)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderTopWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    overflow: 'hidden',
-  },
   handleArea: {
     alignItems: 'center',
     paddingVertical: 12,
@@ -395,10 +407,26 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: 'rgba(255,255,255,0.25)',
   },
-  content: {
+  portalContainer: {
     flex: 1,
   },
-  portalContainer: {
+  sheetContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+
+  sheet: {
+    flex: 1,
+    backgroundColor: 'rgba(15,10,26,0.98)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    overflow: 'hidden',
+  },
+  content: {
     flex: 1,
   },
 });

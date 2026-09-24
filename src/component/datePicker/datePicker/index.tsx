@@ -16,7 +16,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { BottomSheet, BottomSheetRef } from '../../bottomsheet';
+import { BottomSheet } from '../../bottomsheet';
 import {
   clampDate,
   DatePickerType,
@@ -29,6 +29,7 @@ import {
   MONTHS,
   parseDate,
 } from './common';
+import { BottomSheetRef } from '../../bottomsheet/bottomsheet/interface';
 
 export type { DatePickerType } from './common';
 
@@ -113,10 +114,7 @@ export const DatePickerComponent = ({
       setTmpDay(dayList[dayList.length - 1].value);
     }
   }, [dayList, tmpDay]);
-  const yearList = useMemo(
-    () => getYearList(yearCenter),
-    [yearCenter],
-  );
+  const yearList = useMemo(() => getYearList(yearCenter), [yearCenter]);
 
   const openSheet = useCallback(() => {
     if (disabled) {
