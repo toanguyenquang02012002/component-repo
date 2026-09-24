@@ -47,8 +47,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     },
     ref,
   ) => {
-    // const sheetHeight = snapHeight || SCREEN_HEIGHT * 0.8;
-    const sheetHeight = SCREEN_HEIGHT * 0.8;
+    const sheetHeight = snapHeight || SCREEN_HEIGHT * 0.8;
+    // const sheetHeight = SCREEN_HEIGHT * 0.8;
     const translateY = useRef(new Animated.Value(sheetHeight)).current;
     const backdropAnim = useRef(new Animated.Value(0)).current;
     const keyboardOffset = useRef(new Animated.Value(0)).current;
