@@ -97,16 +97,16 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           duration: 260,
           useNativeDriver: true,
         }),
-        Animated.timing(keyboardOffset, {
-          toValue: 0,
-          duration: 260,
-          useNativeDriver: true,
-        }),
-        Animated.timing(keyboardOverlap, {
-          toValue: 0,
-          duration: 260,
-          useNativeDriver: false,
-        }),
+        // Animated.timing(keyboardOffset, {
+        //   toValue: 0,
+        //   duration: 260,
+        //   useNativeDriver: true,
+        // }),
+        // Animated.timing(keyboardOverlap, {
+        //   toValue: 0,
+        //   duration: 260,
+        //   useNativeDriver: false,
+        // }),
         Animated.timing(backdropAnim, {
           toValue: 0,
           duration: 300,
@@ -326,7 +326,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
     return (
       <Portal>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={[StyleSheet.absoluteFill, styles.portalContainer]}
           pointerEvents="box-none"
         >

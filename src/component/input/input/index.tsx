@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -36,13 +36,11 @@ export const Input = ({
   style,
   ...textInputProps
 }: TextFieldProps) => {
-  const [valueInput, setValueInput] = useState(value?.toString() ?? '');
+  const [internalValue, setInternalValue] = useState('');
   const [height, setHeight] = useState(0);
   const [focused, setFocused] = useState(false);
-
-  useEffect(() => {
-    setValueInput(value?.toString() ?? '');
-  }, [value]);
+  const isControlled = value !== undefined && value !== null;
+  const valueInput = isControlled ? value.toString() : internalValue;
 
   const backgroundColor =
     showbgcl && !editable
@@ -79,7 +77,9 @@ export const Input = ({
               onBlur?.(event);
             }}
             onChangeText={txt => {
-              setValueInput(txt);
+              if (!isControlled) {
+                setInternalValue(txt);
+              }
               onChangeText?.(txt);
             }}
             onContentSizeChange={event => {

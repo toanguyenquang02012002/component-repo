@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -602,6 +603,7 @@ export const formSelectNew = (): Array<FormItemsProps> => [
     searchBox: true,
     textSearch: '',
     filterOption: true,
+    isPaging: true,
   },
   {
     key: 'district_new',
@@ -777,15 +779,24 @@ export function HomeScreen(): React.ReactElement {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? undefined : 'padding'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={[{ flex: 1 }]}
       >
-        <View style={[{ flex: 1 }]}>
+        <ScrollView style={[{ flex: 1 }]}>
           <Form
             data={formSelect}
             ref={refError}
             onChangeText={(value, index) => {
               const tmp = [...formSelect];
+              if (tmp[index].key == 'monthly_income') {
+                if (value?.toString()?.startsWith('0')) {
+                  tmp[index] = {
+                    ...tmp[index],
+                    value: '',
+                    error: '',
+                  };
+                }
+              }
               tmp[index] = {
                 ...tmp[index],
                 value,
@@ -801,6 +812,11 @@ export function HomeScreen(): React.ReactElement {
                 error: '',
               };
               setFormSelect(tmp);
+            }}
+            onPaging={() => {
+              console.log('====================================');
+              console.log('end');
+              console.log('====================================');
             }}
             onSelected={(
               value:
@@ -883,18 +899,15 @@ export function HomeScreen(): React.ReactElement {
             }}
           />
           <TouchableOpacity
-            style={{ position: 'absolute', bottom: 0 }}
             onPress={() => {
               const tmp = [...formSelect];
-              tmp[0].error = '1231231231';
-              tmp[1].error = '1231231231';
               setFormSelect(tmp);
-              console.log(formSelect);
+              console.log(tmp);
             }}
           >
             <Text>ávasvasv</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

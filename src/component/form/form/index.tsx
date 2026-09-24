@@ -1,5 +1,13 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
-import { Keyboard, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { FormItemsProps, FormProps, FormRef } from './entity';
 import { fieldRegistry } from './fieldRegistry';
 
@@ -78,37 +86,34 @@ export const Form = forwardRef<FormRef, FormProps>(
     }, {});
 
     return (
-      <ScrollView
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={styles.contentContainer}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        onScrollBeginDrag={Keyboard.dismiss}
-        showsVerticalScrollIndicator={false}
-        style={styles.container}
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss();
+        }}
       >
-        {Object.values(groupedData).map((items, groupIndex) => {
-          const isRow = items.length > 1;
+        <View style={styles.container}>
+          {Object.values(groupedData).map((items, groupIndex) => {
+            const isRow = items.length > 1;
 
-          return (
-            <View key={groupIndex} style={isRow ? styles.row : undefined}>
-              {items.map(({ item, index }) => (
-                <View
-                  key={item.key}
-                  style={
-                    isRow
-                      ? [styles.column, { flex: item.flex ?? 1 }]
-                      : styles.item
-                  }
-                >
-                  {renderItem(item, index)}
-                </View>
-              ))}
-            </View>
-          );
-        })}
-      </ScrollView>
+            return (
+              <View key={groupIndex} style={isRow ? styles.row : undefined}>
+                {items.map(({ item, index }) => (
+                  <View
+                    key={item.key}
+                    style={
+                      isRow
+                        ? [styles.column, { flex: item.flex ?? 1 }]
+                        : styles.item
+                    }
+                  >
+                    {renderItem(item, index)}
+                  </View>
+                ))}
+              </View>
+            );
+          })}
+        </View>
+      </TouchableWithoutFeedback>
     );
   },
 );
@@ -116,6 +121,7 @@ export const Form = forwardRef<FormRef, FormProps>(
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
   },
   contentContainer: {
     flexGrow: 1,

@@ -1,4 +1,4 @@
-import { KeyboardType } from 'react-native';
+import { KeyboardTypeOptions } from 'react-native';
 import { TextInputProps } from 'react-native-paper';
 export interface FormRef {
   resetError: (index?: number) => void;
@@ -62,7 +62,7 @@ export interface ItemGroupTextInput {
 }
 export interface GroupTextInputProps {
   data: Array<ItemGroupTextInput>;
-  keyboardType?: KeyboardType;
+  keyboardType?: KeyboardTypeOptions;
   maxLength?: number;
   onChangeText?: (text: string, type?: 'month' | 'year') => void;
   error?: string;
@@ -135,7 +135,7 @@ export interface FormItemsProps {
   dataSelect: ItemSelectProduct[];
   dataTree?: FilterDashboardOrg[];
   disabled: boolean;
-  keyboardType?: KeyboardType;
+  keyboardType?: KeyboardTypeOptions;
   multiline?: boolean;
   maxLength?: number;
   isShow?: boolean;

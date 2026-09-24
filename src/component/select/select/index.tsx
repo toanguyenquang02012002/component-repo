@@ -115,8 +115,9 @@ export const Select = ({
         return;
       }
 
-      Keyboard.dismiss();
       refbottomSheet.current?.close();
+      Keyboard.dismiss();
+
       const nextItem = { ...item, isSelected: true };
       setValueSelected(nextItem);
       onSelected?.(nextItem);
@@ -133,6 +134,8 @@ export const Select = ({
   );
 
   const handleEndReached = useCallback(() => {
+    console.log(123);
+
     if (isPaging && !isLoadmore && !loading) {
       onPaging?.();
     }
