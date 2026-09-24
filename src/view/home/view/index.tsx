@@ -1,5 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {
   FilterDashboardOrg,
   Form,
@@ -768,121 +774,126 @@ export function HomeScreen(): React.ReactElement {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Form
-        data={formSelect}
-        ref={refError}
-        onChangeText={(value, index) => {
-          const tmp = [...formSelect];
-          tmp[index] = {
-            ...tmp[index],
-            value,
-            error: '',
-          };
-          setFormSelect(tmp);
-        }}
-        onChangeDate={(value, index) => {
-          const tmp = [...formSelect];
-          tmp[index] = {
-            ...tmp[index],
-            value: value ?? '',
-            error: '',
-          };
-          setFormSelect(tmp);
-        }}
-        onSelected={(
-          value:
-            | ItemSelectProduct
-            | ItemSelectProduct[]
-            | FilterDashboardOrg
-            | FilterDashboardOrg[]
-            | SelectGroupValues
-            | string
-            | number
-            | string[]
-            | number[]
-            | undefined,
-          index,
-        ) => {
-          const tmp = [...formSelect];
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <View style={styles.container}>
+        <Form
+          data={formSelect}
+          ref={refError}
+          onChangeText={(value, index) => {
+            const tmp = [...formSelect];
+            tmp[index] = {
+              ...tmp[index],
+              value,
+              error: '',
+            };
+            setFormSelect(tmp);
+          }}
+          onChangeDate={(value, index) => {
+            const tmp = [...formSelect];
+            tmp[index] = {
+              ...tmp[index],
+              value: value ?? '',
+              error: '',
+            };
+            setFormSelect(tmp);
+          }}
+          onSelected={(
+            value:
+              | ItemSelectProduct
+              | ItemSelectProduct[]
+              | FilterDashboardOrg
+              | FilterDashboardOrg[]
+              | SelectGroupValues
+              | string
+              | number
+              | string[]
+              | number[]
+              | undefined,
+            index,
+          ) => {
+            const tmp = [...formSelect];
 
-          if (value !== undefined) {
-            tmp[index] = { ...tmp[index], value };
-            if (
-              tmp[index].key === 'province_new' &&
-              !Array.isArray(value) &&
-              typeof value === 'object' &&
-              'value' in value &&
-              typeof value.value === 'string'
-            ) {
-              const districtIndex = tmp.findIndex(
-                item => item.key === 'district_new',
-              );
-              if (districtIndex >= 0) {
-                tmp[districtIndex] = {
-                  ...tmp[districtIndex],
-                  error: '',
-                  value: '',
-                  dataSelect: wardsByProvince[value.value] ?? [],
-                };
+            if (value !== undefined) {
+              tmp[index] = { ...tmp[index], value };
+              if (
+                tmp[index].key === 'province_new' &&
+                !Array.isArray(value) &&
+                typeof value === 'object' &&
+                'value' in value &&
+                typeof value.value === 'string'
+              ) {
+                const districtIndex = tmp.findIndex(
+                  item => item.key === 'district_new',
+                );
+                if (districtIndex >= 0) {
+                  tmp[districtIndex] = {
+                    ...tmp[districtIndex],
+                    error: '',
+                    value: '',
+                    dataSelect: wardsByProvince[value.value] ?? [],
+                  };
+                }
               }
-            }
-
-            if (
-              tmp[index].key === 'GROUP_FILTER' &&
-              !Array.isArray(value) &&
-              typeof value === 'object'
-            ) {
-              const groupValue = value as SelectGroupValues;
-              const loanPurpose = groupValue.loanPurpose;
-              const resultSelectIndex = tmp.findIndex(
-                item => item.key === 'GROUP_RESULT_SELECT',
-              );
 
               if (
-                resultSelectIndex >= 0 &&
-                loanPurpose &&
-                !Array.isArray(loanPurpose)
+                tmp[index].key === 'GROUP_FILTER' &&
+                !Array.isArray(value) &&
+                typeof value === 'object'
               ) {
-                tmp[resultSelectIndex] = {
-                  ...tmp[resultSelectIndex],
-                  value: '',
-                  dataSelect: productByLoanPurpose[loanPurpose.value] ?? [],
-                };
-              }
-            }
-          } else {
-            tmp[index] = { ...tmp[index], value: '' };
-            if (tmp[index].key === 'province_new') {
-              const wardIndex = tmp.findIndex(
-                item => item.key === 'district_new',
-              );
-              if (wardIndex >= 0) {
-                tmp[wardIndex] = {
-                  ...tmp[wardIndex],
-                  value: '',
-                  dataSelect: [],
-                };
-              }
-            }
-          }
+                const groupValue = value as SelectGroupValues;
+                const loanPurpose = groupValue.loanPurpose;
+                const resultSelectIndex = tmp.findIndex(
+                  item => item.key === 'GROUP_RESULT_SELECT',
+                );
 
-          setFormSelect(tmp);
-        }}
-      />
-      <TouchableOpacity />
-      <TouchableOpacity
-        onPress={() => {
-          const tmp = [...formSelect];
-          tmp[0].error = '1231231231';
-          tmp[1].error = '1231231231';
-          setFormSelect(tmp);
-          console.log(formSelect);
-        }}
-      >
-        <Text>ávasvasv</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+                if (
+                  resultSelectIndex >= 0 &&
+                  loanPurpose &&
+                  !Array.isArray(loanPurpose)
+                ) {
+                  tmp[resultSelectIndex] = {
+                    ...tmp[resultSelectIndex],
+                    value: '',
+                    dataSelect: productByLoanPurpose[loanPurpose.value] ?? [],
+                  };
+                }
+              }
+            } else {
+              tmp[index] = { ...tmp[index], value: '' };
+              if (tmp[index].key === 'province_new') {
+                const wardIndex = tmp.findIndex(
+                  item => item.key === 'district_new',
+                );
+                if (wardIndex >= 0) {
+                  tmp[wardIndex] = {
+                    ...tmp[wardIndex],
+                    value: '',
+                    dataSelect: [],
+                  };
+                }
+              }
+            }
+
+            setFormSelect(tmp);
+          }}
+        />
+        <TouchableOpacity />
+        <TouchableOpacity
+          onPress={() => {
+            const tmp = [...formSelect];
+            tmp[0].error = '1231231231';
+            tmp[1].error = '1231231231';
+            setFormSelect(tmp);
+            console.log(formSelect);
+          }}
+        >
+          <Text>ávasvasv</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

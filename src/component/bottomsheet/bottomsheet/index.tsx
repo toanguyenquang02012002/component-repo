@@ -12,6 +12,7 @@ import {
   Dimensions,
   Easing,
   Keyboard,
+  KeyboardAvoidingView,
   KeyboardEvent,
   Platform,
   StyleSheet,
@@ -200,7 +201,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
           Animated.timing(animatedSheetHeight, {
             toValue: height,
             duration: 700,
-            easing: Easing.inOut(Easing.ease),
+            easing: Easing.in(Easing.step0),
 
             // Height không hỗ trợ native driver
             useNativeDriver: false,
@@ -324,7 +325,8 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
 
     return (
       <Portal>
-        <View
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={[StyleSheet.absoluteFill, styles.portalContainer]}
           pointerEvents="box-none"
         >
@@ -387,7 +389,7 @@ export const BottomSheet = forwardRef<BottomSheetRef, BottomSheetProps>(
               </GestureDetector>
             </Animated.View>
           </Animated.View>
-        </View>
+        </KeyboardAvoidingView>
       </Portal>
     );
   },

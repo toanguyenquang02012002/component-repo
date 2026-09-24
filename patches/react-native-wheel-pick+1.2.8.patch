@@ -1,0 +1,20 @@
+diff --git a/node_modules/react-native-wheel-pick/android/build.gradle b/node_modules/react-native-wheel-pick/android/build.gradle
+index ace33cd..2c274c9 100644
+--- a/node_modules/react-native-wheel-pick/android/build.gradle
++++ b/node_modules/react-native-wheel-pick/android/build.gradle
+@@ -15,7 +15,7 @@ if (isNewArchitectureEnabled()) {
+ }
+ 
+ android {
+-    compileSdkVersion 33
++    compileSdkVersion rootProject.ext.compileSdkVersion
+     namespace 'com.tron'
+ 
+     defaultConfig {
+@@ -30,5 +30,5 @@ android {
+ dependencies {
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
+     implementation "com.github.AigeStudio:WheelPicker:5913fa15fc"
+-    implementation 'com.facebook.react:react-native:+'
++    implementation 'com.facebook.react:react-android'
+ }
